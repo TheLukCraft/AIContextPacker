@@ -20,6 +20,8 @@ public partial class MainViewModel : ObservableObject
     private readonly INotificationService _notificationService;
     private readonly IClipboardService _clipboardService;
 
+    public event Action<string>? ToastRequested;
+
     [ObservableProperty]
     private FileTreeNode? rootNode;
 
@@ -36,6 +38,9 @@ public partial class MainViewModel : ObservableObject
     private ObservableCollection<GlobalPrompt> globalPrompts = new();
 
     [ObservableProperty]
+    private ObservableCollection<string> recentProjects = new();
+
+    [ObservableProperty]
     private string? selectedGlobalPromptId;
 
     [ObservableProperty]
@@ -49,6 +54,12 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isGenerateEnabled = true;
+
+    [ObservableProperty]
+    private bool isLoadingProject = false;
+
+    [ObservableProperty]
+    private string loadingStatus = string.Empty;
 
     [ObservableProperty]
     private string currentProjectPath = string.Empty;
@@ -92,9 +103,28 @@ public partial class MainViewModel : ObservableObject
             AvailableFilters.Add(filterVm);
         }
 
+        // Add "None" option for global prompts
+        GlobalPrompts.Add(new GlobalPrompt
+        {
+            Id = null,
+            Name = "(None)",
+            Content = string.Empty
+        });
+
         foreach (var prompt in Settings.GlobalPrompts)
         {
             GlobalPrompts.Add(prompt);
+        }
+
+        // Load recent projects
+        var recentProjectsList = await _settingsService.GetRecentProjectsAsync();
+        RecentProjects.Clear();
+        foreach (var project in recentProjectsList.Take(5))
+        {
+            if (Directory.Exists(project))
+            {
+                RecentProjects.Add(project);
+            }
         }
 
         var sessionState = await _settingsService.LoadSessionStateAsync();
@@ -122,6 +152,9 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
+            IsLoadingProject = true;
+            LoadingStatus = "Validating folder...";
+
             if (string.IsNullOrWhiteSpace(folderPath))
             {
                 _notificationService.ShowWarning("Please select a valid folder.");
@@ -134,10 +167,14 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            LoadingStatus = "Loading project structure...";
+
             var structure = await _fileSystemService.LoadProjectAsync(folderPath);
             CurrentProjectPath = folderPath;
             RootNode = structure.RootNode;
             HasLocalGitignore = structure.HasLocalGitignore;
+
+            LoadingStatus = "Reading .gitignore...";
 
             if (HasLocalGitignore)
             {
@@ -148,13 +185,33 @@ public partial class MainViewModel : ObservableObject
                 _localGitignorePatterns.Clear();
             }
 
+            LoadingStatus = "Applying filters...";
+
             ApplyFilters();
             await _settingsService.AddRecentProjectAsync(folderPath);
+            
+            // Update recent projects list
+            var recentProjectsList = await _settingsService.GetRecentProjectsAsync();
+            RecentProjects.Clear();
+            foreach (var project in recentProjectsList.Take(5))
+            {
+                if (Directory.Exists(project))
+                {
+                    RecentProjects.Add(project);
+                }
+            }
+            
             MarkAsChanged();
+            LoadingStatus = "Project loaded successfully!";
         }
         catch (Exception ex)
         {
             _notificationService.ShowError($"Failed to load project: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingProject = false;
+            LoadingStatus = string.Empty;
         }
     }
 
@@ -215,7 +272,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task GeneratePartsAsync()
     {
-        if (string.IsNullOrEmpty(CurrentProjectPath))
+        if (string.IsNullOrEmpty(CurrentProjectPath) || RootNode == null)
         {
             _notificationService.ShowWarning("Please load a project first.");
             return;
@@ -230,7 +287,10 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var globalPrompt = GlobalPrompts.FirstOrDefault(p => p.Id == SelectedGlobalPromptId)?.Content;
+        // Only use global prompt if a non-null ID is selected
+        var globalPrompt = string.IsNullOrEmpty(SelectedGlobalPromptId) 
+            ? null 
+            : GlobalPrompts.FirstOrDefault(p => p.Id == SelectedGlobalPromptId)?.Content;
 
         var generator = new PartGeneratorService(_fileSystemService, _notificationService);
         var parts = await generator.GeneratePartsAsync(
@@ -259,7 +319,7 @@ public partial class MainViewModel : ObservableObject
     {
         await _clipboardService.SetTextAsync(part.Content);
         part.WasCopied = true;
-        _notificationService.ShowSuccess($"Part {part.PartNumber} copied to clipboard!");
+        ToastRequested?.Invoke($"Part {part.PartNumber} copied to clipboard!");
     }
 
     [RelayCommand]
@@ -278,7 +338,7 @@ public partial class MainViewModel : ObservableObject
         var structure = generator.GenerateStructure(RootNode, selectedFiles, pinnedFilePaths);
 
         await _clipboardService.SetTextAsync(structure);
-        _notificationService.ShowSuccess("Project structure copied to clipboard!");
+        ToastRequested?.Invoke("Project structure copied to clipboard!");
     }
 
     public void ApplyFilters()
