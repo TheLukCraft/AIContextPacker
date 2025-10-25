@@ -42,21 +42,9 @@
                           Margin="0,0,0,20"
                           Foreground="{DynamicResource TextBrush}">
                     <StackPanel Margin="10">
-                        <RadioButton Content="Light" 
-                                     GroupName="Theme"
-                                     IsChecked="{Binding Theme, Converter={StaticResource ThemeConverter}, ConverterParameter=Light}"
-                                     Margin="0,5"
-                                     Foreground="{DynamicResource TextBrush}"/>
-                        <RadioButton Content="Dark" 
-                                     GroupName="Theme"
-                                     IsChecked="{Binding Theme, Converter={StaticResource ThemeConverter}, ConverterParameter=Dark}"
-                                     Margin="0,5"
-                                     Foreground="{DynamicResource TextBrush}"/>
-                        <RadioButton Content="System" 
-                                     GroupName="Theme"
-                                     IsChecked="{Binding Theme, Converter={StaticResource ThemeConverter}, ConverterParameter=System}"
-                                     Margin="0,5"
-                                     Foreground="{DynamicResource TextBrush}"/>
+                        <TextBlock Text="Theme switching will be available in a future update."
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   Margin="0,5"/>
                     </StackPanel>
                 </GroupBox>
 

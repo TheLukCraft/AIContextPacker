@@ -51,7 +51,7 @@
         <!-- Menu Bar -->
         <Menu DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}">
             <MenuItem Header="File">
-                <MenuItem Header="Open Project..." Command="{Binding LoadProjectCommand}"/>
+                <MenuItem Header="Open Project..." Click="SelectProject_Click"/>
                 <Separator/>
                 <MenuItem Header="Recent Projects">
                     <!-- TODO: Bind to recent projects list -->

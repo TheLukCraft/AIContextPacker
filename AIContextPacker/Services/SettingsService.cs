@@ -45,7 +45,12 @@ public class SettingsService : ISettingsService
         {
             var defaultSettings = new AppSettings
             {
-                IgnoreFilters = DefaultFilters.GetDefaultFilters()
+                IgnoreFilters = DefaultFilters.GetDefaultFilters(),
+                ActiveFilters = new Dictionary<string, bool>
+                {
+                    { ".NET Build", true },
+                    { "Git", true }
+                }
             };
             await SaveSettingsAsync(defaultSettings);
             return defaultSettings;
@@ -60,6 +65,11 @@ public class SettingsService : ISettingsService
             if (settings.IgnoreFilters.Count == 0)
             {
                 settings.IgnoreFilters = DefaultFilters.GetDefaultFilters();
+                settings.ActiveFilters = new Dictionary<string, bool>
+                {
+                    { ".NET Build", true },
+                    { "Git", true }
+                };
                 await SaveSettingsAsync(settings);
             }
             
