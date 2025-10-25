@@ -1,0 +1,184 @@
+<Window x:Class="AIContextPacker.Views.TutorialWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tutorial - How to Use AI Context Packer" Height="700" Width="900"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStartupLocation="CenterOwner">
+    
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="PrimaryButton">
+            <Setter Property="Background" Value="#FF6351B5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF7965C8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="30">
+        <StackPanel MaxWidth="800">
+            <TextBlock Text="AI Context Packer Tutorial" 
+                       FontSize="28" 
+                       FontWeight="Bold" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,20"/>
+            
+            <TextBlock Text="What is AI Context Packer?" 
+                       FontSize="20" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,20"
+                       LineHeight="24">
+                AI Context Packer is a tool designed to help developers prepare their codebase for AI assistants like ChatGPT, Claude, or GitHub Copilot. It intelligently packages your project files into manageable parts, respecting character limits while maintaining context.
+            </TextBlock>
+            
+            <TextBlock Text="Step 1: Load Your Project" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,20,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                Click the "📁 Select Project Folder" button or use File → Open Project to browse and select your project directory. You can also drag and drop a folder directly into the application.
+            </TextBlock>
+            
+            <TextBlock Text="Step 2: Configure Filters" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                • <Run FontWeight="SemiBold">Ignore Filters:</Run> Enable/disable predefined filters like ".NET Build", "Node.js", or "Git" to exclude unnecessary files (binaries, dependencies, etc.)&#10;&#10;
+                • <Run FontWeight="SemiBold">.gitignore Support:</Run> If your project has a .gitignore file, enable "Use detected .gitignore" to automatically exclude those files&#10;&#10;
+                • <Run FontWeight="SemiBold">Custom Filters:</Run> Go to Settings to create your own ignore patterns using gitignore format
+            </TextBlock>
+            
+            <TextBlock Text="Step 3: Select Files" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                • Check the boxes next to files you want to include in your AI context&#10;
+                • Use "Select All" or "Deselect All" buttons for quick selection&#10;
+                • <Run FontWeight="SemiBold">Pin Important Files (📌):</Run> Click the pin icon to prioritize files - they'll appear first in every part, ensuring critical context is always available
+            </TextBlock>
+            
+            <TextBlock Text="Step 4: Choose a Global Prompt (Optional)" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                Select a predefined prompt template from the dropdown (e.g., "🐛 Bug Fix Assistant", "👀 Code Review Expert") to automatically include instructions for the AI. Choose "(None)" if you don't need a prompt.
+            </TextBlock>
+            
+            <TextBlock Text="Step 5: Set Character Limit" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                Adjust the "Max Chars Limit" to match your AI's context window (e.g., 10000 for smaller models, 100000 for larger ones). The app will automatically split your content into parts that fit this limit.
+            </TextBlock>
+            
+            <TextBlock Text="Step 6: Generate Parts" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                Click "✨ Generate" to create parts. Each part will:&#10;
+                • Start with pinned files (if any)&#10;
+                • Include your global prompt (if selected)&#10;
+                • Contain selected files up to the character limit&#10;
+                • Show a character count so you know exactly how much context you're using
+            </TextBlock>
+            
+            <TextBlock Text="Step 7: Copy to Clipboard" 
+                       FontSize="18" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource PrimaryBrush}"
+                       Margin="0,10,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                • Click "📋 Copy" on any part to copy it to your clipboard&#10;
+                • The part will turn orange indicating it's been copied&#10;
+                • Use "🔎 Preview" to see the full content before copying&#10;
+                • Use "📋 Copy Structure" to copy just the project's folder structure
+            </TextBlock>
+            
+            <TextBlock Text="Tips &amp; Best Practices" 
+                       FontSize="20" 
+                       FontWeight="SemiBold" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,20,0,10"/>
+            
+            <TextBlock TextWrapping="Wrap" 
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"
+                       LineHeight="24">
+                ✓ Pin your main entry point files (Program.cs, App.tsx, etc.) so they appear in every part&#10;
+                ✓ Use filters to exclude build artifacts, dependencies, and binary files&#10;
+                ✓ Recent projects are saved - access them quickly via File → Recent Projects&#10;
+                ✓ Customize global prompts in Settings to match your workflow&#10;
+                ✓ The app remembers your settings between sessions
+            </TextBlock>
+            
+            <Button Content="Close" 
+                    Click="Close_Click"
+                    HorizontalAlignment="Center"
+                    MinWidth="120"
+                    Padding="12,6"
+                    Margin="0,30,0,0"
+                    Style="{StaticResource PrimaryButton}"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

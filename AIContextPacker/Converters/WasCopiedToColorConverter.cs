@@ -14,7 +14,7 @@ public class WasCopiedToColorConverter : IValueConverter
             return new SolidColorBrush(Color.FromRgb(255, 152, 0)); // Orange color
         }
         
-        return new SolidColorBrush(Color.FromRgb(45, 45, 48)); // Default dark color
+        return new SolidColorBrush(Color.FromRgb(63, 81, 181)); // Material Design Indigo
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

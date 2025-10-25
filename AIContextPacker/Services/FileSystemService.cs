@@ -15,10 +15,13 @@ public class FileSystemService : IFileSystemService
         if (!Directory.Exists(folderPath))
             throw new DirectoryNotFoundException($"Directory not found: {folderPath}");
 
+        // Run tree building on background thread to avoid UI freeze
+        var rootNode = await Task.Run(() => BuildTreeSync(folderPath, null));
+
         var structure = new ProjectStructure
         {
             RootPath = folderPath,
-            RootNode = await BuildTreeAsync(folderPath, null)
+            RootNode = rootNode
         };
 
         var gitignorePath = Path.Combine(folderPath, ".gitignore");
@@ -28,11 +31,8 @@ public class FileSystemService : IFileSystemService
         return structure;
     }
 
-    private async Task<FileTreeNode> BuildTreeAsync(string path, FileTreeNode? parent)
+    private FileTreeNode BuildTreeSync(string path, FileTreeNode? parent)
     {
-        // Yield to keep UI responsive during large tree builds
-        await Task.Yield();
-
         // Verify the path exists before creating a node
         if (!Directory.Exists(path) && !File.Exists(path))
         {
@@ -57,7 +57,7 @@ public class FileSystemService : IFileSystemService
                     // Only add directories that actually exist
                     if (Directory.Exists(dir))
                     {
-                        var childNode = await BuildTreeAsync(dir, node);
+                        var childNode = BuildTreeSync(dir, node);
                         node.Children.Add(childNode);
                     }
                 }
