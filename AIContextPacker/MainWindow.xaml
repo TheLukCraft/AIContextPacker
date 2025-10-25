@@ -69,6 +69,10 @@
                     <MenuItem Header="Exit" Click="Exit_Click"/>
                 </MenuItem>
                 <MenuItem Header="Settings" Click="Settings_Click"/>
+                <MenuItem Header="Help">
+                    <MenuItem Header="Tutorial" Click="Tutorial_Click"/>
+                    <MenuItem Header="About" Click="About_Click"/>
+                </MenuItem>
             </Menu>
 
         <!-- Toolbar -->
@@ -102,7 +106,13 @@
                               DisplayMemberPath="Name"
                               SelectedValuePath="Id"
                               ItemsSource="{Binding GlobalPrompts}"
-                              VerticalAlignment="Center"/>
+                              VerticalAlignment="Center">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
                 </StackPanel>
                 
                 <!-- Loading indicator -->

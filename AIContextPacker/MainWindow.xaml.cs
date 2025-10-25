@@ -22,6 +22,12 @@ public partial class MainWindow : Window
         
         // Subscribe to toast notifications
         _viewModel.ToastRequested += ShowToast;
+        
+        // Save state when closing
+        Closing += async (s, e) =>
+        {
+            await _viewModel.SaveStateAsync();
+        };
     }
 
     private async void SelectProject_Click(object sender, RoutedEventArgs e)
@@ -104,6 +110,20 @@ public partial class MainWindow : Window
     private void Exit_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Tutorial_Click(object sender, RoutedEventArgs e)
+    {
+        var tutorialWindow = new TutorialWindow();
+        tutorialWindow.Owner = this;
+        tutorialWindow.ShowDialog();
+    }
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var aboutWindow = new AboutWindow();
+        aboutWindow.Owner = this;
+        aboutWindow.ShowDialog();
     }
 
     private void PreviewPart_Click(object sender, RoutedEventArgs e)

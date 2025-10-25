@@ -103,6 +103,14 @@ public partial class MainViewModel : ObservableObject
             AvailableFilters.Add(filterVm);
         }
 
+        // Add "None" option for global prompts
+        GlobalPrompts.Add(new GlobalPrompt
+        {
+            Id = null,
+            Name = "(None)",
+            Content = string.Empty
+        });
+
         foreach (var prompt in Settings.GlobalPrompts)
         {
             GlobalPrompts.Add(prompt);
@@ -279,7 +287,10 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var globalPrompt = GlobalPrompts.FirstOrDefault(p => p.Id == SelectedGlobalPromptId)?.Content;
+        // Only use global prompt if a non-null ID is selected
+        var globalPrompt = string.IsNullOrEmpty(SelectedGlobalPromptId) 
+            ? null 
+            : GlobalPrompts.FirstOrDefault(p => p.Id == SelectedGlobalPromptId)?.Content;
 
         var generator = new PartGeneratorService(_fileSystemService, _notificationService);
         var parts = await generator.GeneratePartsAsync(
@@ -327,7 +338,7 @@ public partial class MainViewModel : ObservableObject
         var structure = generator.GenerateStructure(RootNode, selectedFiles, pinnedFilePaths);
 
         await _clipboardService.SetTextAsync(structure);
-        _notificationService.ShowSuccess("Project structure copied to clipboard!");
+        ToastRequested?.Invoke("Project structure copied to clipboard!");
     }
 
     public void ApplyFilters()
