@@ -1,0 +1,36 @@
+<Window x:Class="AIContextPacker.Views.PreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Part Preview" Height="600" Width="800"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStartupLocation="CenterOwner">
+    
+    <DockPanel Margin="20">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock FontSize="16" 
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextBrush}">
+                <Run Text="Part "/>
+                <Run Text="{Binding PartNumber, Mode=OneWay}"/>
+            </TextBlock>
+            <TextBlock Margin="0,5"
+                       Foreground="{DynamicResource SecondaryTextBrush}">
+                <Run Text="Characters: "/>
+                <Run Text="{Binding CharacterCount, Mode=OneWay}"/>
+                <Run Text=" / "/>
+                <Run Text="{Binding MaxChars, Mode=OneWay}"/>
+            </TextBlock>
+        </StackPanel>
+
+        <TextBox Text="{Binding Content, Mode=OneWay}"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 FontFamily="Consolas"
+                 FontSize="12"
+                 Background="{DynamicResource SurfaceBrush}"
+                 Foreground="{DynamicResource TextBrush}"
+                 Padding="10"/>
+    </DockPanel>
+</Window>
