@@ -30,6 +30,9 @@ public class FileSystemService : IFileSystemService
 
     private async Task<FileTreeNode> BuildTreeAsync(string path, FileTreeNode? parent)
     {
+        // Yield to keep UI responsive during large tree builds
+        await Task.Yield();
+
         // Verify the path exists before creating a node
         if (!Directory.Exists(path) && !File.Exists(path))
         {

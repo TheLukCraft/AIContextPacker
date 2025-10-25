@@ -46,6 +46,7 @@ public class SettingsService : ISettingsService
             var defaultSettings = new AppSettings
             {
                 IgnoreFilters = DefaultFilters.GetDefaultFilters(),
+                GlobalPrompts = DefaultPrompts.GetDefaultPrompts(),
                 ActiveFilters = new Dictionary<string, bool>
                 {
                     { ".NET Build", true },
@@ -70,6 +71,13 @@ public class SettingsService : ISettingsService
                     { ".NET Build", true },
                     { "Git", true }
                 };
+                await SaveSettingsAsync(settings);
+            }
+            
+            // Ensure we have default prompts if none exist
+            if (settings.GlobalPrompts.Count == 0)
+            {
+                settings.GlobalPrompts = DefaultPrompts.GetDefaultPrompts();
                 await SaveSettingsAsync(settings);
             }
             

@@ -144,6 +144,9 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
+            IsLoadingProject = true;
+            LoadingStatus = "Validating folder...";
+
             if (string.IsNullOrWhiteSpace(folderPath))
             {
                 _notificationService.ShowWarning("Please select a valid folder.");
@@ -156,7 +159,6 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            IsLoadingProject = true;
             LoadingStatus = "Loading project structure...";
 
             var structure = await _fileSystemService.LoadProjectAsync(folderPath);
