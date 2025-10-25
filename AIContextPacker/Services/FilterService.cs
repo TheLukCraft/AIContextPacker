@@ -98,30 +98,52 @@ public class FilterService
         if (pattern.StartsWith("!"))
             return false;
 
-        // Convert gitignore pattern to regex
-        var regexPattern = "^" + Regex.Escape(pattern)
-            .Replace("\\*\\*/", "(.*/)?")
-            .Replace("\\*", "[^/]*")
-            .Replace("\\?", ".")
-            .Replace("/", Regex.Escape(Path.DirectorySeparatorChar.ToString()));
+        // Simple pattern matching
+        // Remove trailing slash for directory patterns
+        var cleanPattern = pattern.TrimEnd('/');
+        var cleanPath = path.TrimEnd('/');
 
-        // If pattern ends with /, it only matches directories
-        if (pattern.EndsWith("/"))
+        // Handle wildcards
+        if (pattern.Contains("**"))
         {
-            regexPattern = regexPattern.TrimEnd(Regex.Escape(Path.DirectorySeparatorChar.ToString()).ToCharArray());
-            return Directory.Exists(Path.Combine(_basePath, path)) && 
-                   Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
+            // **/ means match in any directory
+            var patternPart = pattern.Replace("**/", "");
+            if (cleanPath.Contains(patternPart) || cleanPath.EndsWith(patternPart))
+                return true;
         }
 
-        // If pattern starts with /, it's relative to root
-        if (!pattern.StartsWith("/") && !pattern.StartsWith("*"))
+        // Simple glob matching
+        if (pattern.Contains("*"))
         {
-            regexPattern = "(.*/)?(" + regexPattern.Substring(1) + ")";
+            var regexPattern = "^" + Regex.Escape(pattern)
+                .Replace("\\*", ".*")
+                .Replace("\\?", ".") + "$";
+            
+            if (Regex.IsMatch(cleanPath, regexPattern, RegexOptions.IgnoreCase))
+                return true;
+                
+            // Also check if any path segment matches
+            var pathParts = cleanPath.Split('/');
+            foreach (var part in pathParts)
+            {
+                if (Regex.IsMatch(part, regexPattern, RegexOptions.IgnoreCase))
+                    return true;
+            }
+        }
+        else
+        {
+            // Exact match or path segment match
+            if (cleanPath.Equals(cleanPattern, StringComparison.OrdinalIgnoreCase))
+                return true;
+                
+            if (cleanPath.Contains("/" + cleanPattern, StringComparison.OrdinalIgnoreCase))
+                return true;
+                
+            if (cleanPath.EndsWith(cleanPattern, StringComparison.OrdinalIgnoreCase))
+                return true;
         }
 
-        regexPattern += "$";
-
-        return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
+        return false;
     }
 
     private string GetRelativePath(string fullPath)

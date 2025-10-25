@@ -122,6 +122,18 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                _notificationService.ShowWarning("Please select a valid folder.");
+                return;
+            }
+
+            if (!_fileSystemService.DirectoryExists(folderPath))
+            {
+                _notificationService.ShowError($"Directory does not exist: {folderPath}");
+                return;
+            }
+
             var structure = await _fileSystemService.LoadProjectAsync(folderPath);
             CurrentProjectPath = folderPath;
             RootNode = structure.RootNode;
@@ -130,6 +142,10 @@ public partial class MainViewModel : ObservableObject
             if (HasLocalGitignore)
             {
                 _localGitignorePatterns = await _fileSystemService.ReadGitignoreAsync(structure.LocalGitignorePath);
+            }
+            else
+            {
+                _localGitignorePatterns.Clear();
             }
 
             ApplyFilters();
@@ -276,6 +292,9 @@ public partial class MainViewModel : ObservableObject
             .ToList();
         var gitignorePatterns = UseDetectedGitignore ? _localGitignorePatterns : new List<string>();
 
+        System.Diagnostics.Debug.WriteLine($"ApplyFilters: Active filters count: {activeFilters.Count}");
+        System.Diagnostics.Debug.WriteLine($"ApplyFilters: Gitignore patterns count: {gitignorePatterns.Count}");
+
         var filterService = new FilterService(
             Settings.AllowedExtensions,
             activeFilters,
@@ -290,7 +309,13 @@ public partial class MainViewModel : ObservableObject
     {
         if (!node.IsDirectory)
         {
+            var wasVisible = node.IsVisible;
             node.IsVisible = filterService.ShouldIncludeFile(node.FullPath);
+            
+            if (wasVisible != node.IsVisible)
+            {
+                System.Diagnostics.Debug.WriteLine($"File visibility changed: {node.Name} -> {node.IsVisible}");
+            }
         }
         else
         {

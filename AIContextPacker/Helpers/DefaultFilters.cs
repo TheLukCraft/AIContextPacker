@@ -11,7 +11,7 @@ public static class DefaultFilters
         {
             new IgnoreFilter
             {
-                Name = ".NET",
+                Name = ".NET Build",
                 Patterns = new List<string>
                 {
                     "bin/",
@@ -24,7 +24,8 @@ public static class DefaultFilters
                     "*.user",
                     "*.suo",
                     "packages/",
-                    "*.nupkg"
+                    "*.nupkg",
+                    "*_wpftmp.csproj"
                 }
             },
             new IgnoreFilter
