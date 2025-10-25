@@ -42,9 +42,24 @@
                           Margin="0,0,0,20"
                           Foreground="{DynamicResource TextBrush}">
                     <StackPanel Margin="10">
-                        <TextBlock Text="Theme switching will be available in a future update."
+                        <TextBlock Text="Choose your preferred theme:"
                                    Foreground="{DynamicResource SecondaryTextBrush}"
-                                   Margin="0,5"/>
+                                   Margin="0,0,0,10"/>
+                        <RadioButton x:Name="LightThemeRadio"
+                                     Content="Light"
+                                     GroupName="Theme"
+                                     Margin="0,5"
+                                     Foreground="{DynamicResource TextBrush}"/>
+                        <RadioButton x:Name="DarkThemeRadio"
+                                     Content="Dark"
+                                     GroupName="Theme"
+                                     Margin="0,5"
+                                     Foreground="{DynamicResource TextBrush}"/>
+                        <RadioButton x:Name="SystemThemeRadio"
+                                     Content="System Default"
+                                     GroupName="Theme"
+                                     Margin="0,5"
+                                     Foreground="{DynamicResource TextBrush}"/>
                     </StackPanel>
                 </GroupBox>
 
