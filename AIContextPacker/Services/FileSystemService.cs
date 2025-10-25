@@ -30,6 +30,12 @@ public class FileSystemService : IFileSystemService
 
     private async Task<FileTreeNode> BuildTreeAsync(string path, FileTreeNode? parent)
     {
+        // Verify the path exists before creating a node
+        if (!Directory.Exists(path) && !File.Exists(path))
+        {
+            throw new FileNotFoundException($"Path not found: {path}");
+        }
+
         var node = new FileTreeNode
         {
             Name = Path.GetFileName(path) ?? path,
@@ -45,27 +51,43 @@ public class FileSystemService : IFileSystemService
                 var directories = Directory.GetDirectories(path).OrderBy(d => d);
                 foreach (var dir in directories)
                 {
-                    var childNode = await BuildTreeAsync(dir, node);
-                    node.Children.Add(childNode);
+                    // Only add directories that actually exist
+                    if (Directory.Exists(dir))
+                    {
+                        var childNode = await BuildTreeAsync(dir, node);
+                        node.Children.Add(childNode);
+                    }
                 }
 
                 var files = Directory.GetFiles(path).OrderBy(f => f);
                 foreach (var file in files)
                 {
-                    var fileNode = new FileTreeNode
+                    // Only add files that actually exist
+                    if (File.Exists(file))
                     {
-                        Name = Path.GetFileName(file),
-                        FullPath = file,
-                        IsDirectory = false,
-                        Parent = node,
-                        FileSize = new FileInfo(file).Length
-                    };
-                    node.Children.Add(fileNode);
+                        var fileNode = new FileTreeNode
+                        {
+                            Name = Path.GetFileName(file),
+                            FullPath = file,
+                            IsDirectory = false,
+                            Parent = node,
+                            FileSize = new FileInfo(file).Length
+                        };
+                        node.Children.Add(fileNode);
+                    }
                 }
             }
             catch (UnauthorizedAccessException)
             {
                 // Skip directories without access
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Skip directories that disappeared during enumeration
+            }
+            catch (FileNotFoundException)
+            {
+                // Skip files that disappeared during enumeration
             }
         }
         else

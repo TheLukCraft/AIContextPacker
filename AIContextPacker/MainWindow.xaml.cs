@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using AIContextPacker.Controls;
 using AIContextPacker.Helpers;
 using AIContextPacker.Models;
 using AIContextPacker.ViewModels;
@@ -18,6 +19,9 @@ public partial class MainWindow : Window
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = _viewModel;
+        
+        // Subscribe to toast notifications
+        _viewModel.ToastRequested += ShowToast;
     }
 
     private async void SelectProject_Click(object sender, RoutedEventArgs e)
@@ -30,6 +34,22 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog())
         {
             await _viewModel.LoadProjectCommand.ExecuteAsync(dialog.FolderName);
+        }
+    }
+
+    private async void RecentProject_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && menuItem.Header is string projectPath)
+        {
+            if (Directory.Exists(projectPath))
+            {
+                await _viewModel.LoadProjectCommand.ExecuteAsync(projectPath);
+            }
+            else
+            {
+                MessageBox.Show($"Project folder no longer exists:\n{projectPath}", 
+                    "Project Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 
@@ -94,5 +114,12 @@ public partial class MainWindow : Window
             previewWindow.Owner = this;
             previewWindow.ShowDialog();
         }
+    }
+
+    public void ShowToast(string message)
+    {
+        var toast = new ToastNotification();
+        ToastContainer.Children.Add(toast);
+        toast.Show(message, ToastType.Success);
     }
 }

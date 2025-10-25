@@ -35,9 +35,10 @@
                        Foreground="{DynamicResource TextBrush}"/>
             <TextBox x:Name="PatternsTextBox" 
                      Height="200"
-                     TextWrapping="Wrap"
+                     TextWrapping="NoWrap"
                      AcceptsReturn="True"
                      VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
                      FontFamily="Consolas"
                      Padding="8"/>
         </StackPanel>

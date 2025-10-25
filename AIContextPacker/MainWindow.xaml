@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIContextPacker"
+        xmlns:converters="clr-namespace:AIContextPacker.Converters"
         mc:Ignorable="d"
         Title="AI Context Packer" Height="800" Width="1400"
         Background="{DynamicResource BackgroundBrush}"
@@ -13,6 +14,8 @@
         DragOver="Window_DragOver">
     
     <Window.Resources>
+        <converters:WasCopiedToColorConverter x:Key="WasCopiedToColorConverter"/>
+        
         <Style TargetType="Button" x:Key="PrimaryButton">
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -47,52 +50,73 @@
         </Style>
     </Window.Resources>
 
-    <DockPanel>
-        <!-- Menu Bar -->
-        <Menu DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}">
-            <MenuItem Header="File">
-                <MenuItem Header="Open Project..." Click="SelectProject_Click"/>
-                <Separator/>
-                <MenuItem Header="Recent Projects">
-                    <!-- TODO: Bind to recent projects list -->
+    <Grid>
+        <DockPanel>
+            <!-- Menu Bar -->
+            <Menu DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}">
+                <MenuItem Header="File">
+                    <MenuItem Header="Open Project..." Click="SelectProject_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Recent Projects" ItemsSource="{Binding RecentProjects}">
+                        <MenuItem.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Header" Value="{Binding}"/>
+                                <EventSetter Event="Click" Handler="RecentProject_Click"/>
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Exit" Click="Exit_Click"/>
                 </MenuItem>
-                <Separator/>
-                <MenuItem Header="Exit" Click="Exit_Click"/>
-            </MenuItem>
-            <MenuItem Header="Settings" Click="Settings_Click"/>
-        </Menu>
+                <MenuItem Header="Settings" Click="Settings_Click"/>
+            </Menu>
 
         <!-- Toolbar -->
         <Border DockPanel.Dock="Top" 
                 Background="{DynamicResource SurfaceBrush}" 
                 Padding="10">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="📁 Select Project Folder" 
-                        Style="{StaticResource PrimaryButton}"
-                        Click="SelectProject_Click"
-                        Margin="0,0,10,0"/>
+            <Grid>
+                <StackPanel Orientation="Horizontal" 
+                           Visibility="{Binding IsLoadingProject, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}">
+                    <Button Content="📁 Select Project Folder" 
+                            Style="{StaticResource PrimaryButton}"
+                            Click="SelectProject_Click"
+                            Margin="0,0,10,0"/>
             
-            <TextBlock Text="Max Chars Limit:" 
-                       VerticalAlignment="Center" 
-                       Margin="20,0,5,0"
-                       Foreground="{DynamicResource TextBrush}"/>
-            <TextBox Width="100" 
-                     Text="{Binding MaxCharsLimit, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalAlignment="Center"
-                     Padding="5"
-                     Margin="0,0,10,0"/>
+                    <TextBlock Text="Max Chars Limit:" 
+                               VerticalAlignment="Center" 
+                               Margin="20,0,5,0"
+                               Foreground="{DynamicResource TextBrush}"/>
+                    <TextBox Width="100" 
+                             Text="{Binding MaxCharsLimit, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center"
+                             Padding="5"
+                             Margin="0,0,10,0"/>
             
-            <TextBlock Text="Global Prompt:" 
-                       VerticalAlignment="Center" 
-                       Margin="20,0,5,0"
-                       Foreground="{DynamicResource TextBrush}"/>
-            <ComboBox Width="200" 
-                      SelectedValue="{Binding SelectedGlobalPromptId}"
-                      DisplayMemberPath="Name"
-                      SelectedValuePath="Id"
-                      ItemsSource="{Binding GlobalPrompts}"
-                      VerticalAlignment="Center"/>
-            </StackPanel>
+                    <TextBlock Text="Global Prompt:" 
+                               VerticalAlignment="Center" 
+                               Margin="20,0,5,0"
+                               Foreground="{DynamicResource TextBrush}"/>
+                    <ComboBox Width="200" 
+                              SelectedValue="{Binding SelectedGlobalPromptId}"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Id"
+                              ItemsSource="{Binding GlobalPrompts}"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Loading indicator -->
+                <StackPanel Orientation="Horizontal" 
+                           Visibility="{Binding IsLoadingProject, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ProgressBar IsIndeterminate="True" 
+                                Width="300" 
+                                Height="20"
+                                Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding LoadingStatus}" 
+                              VerticalAlignment="Center"
+                              Foreground="{DynamicResource TextBrush}"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Main Content -->
@@ -237,20 +261,20 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource BorderBrush}" 
-                                            BorderThickness="1" 
+                                            BorderThickness="2" 
                                             Margin="0,0,0,10"
                                             CornerRadius="4"
                                             Padding="10"
-                                            Background="{DynamicResource BackgroundBrush}">
+                                            Background="{Binding WasCopied, Converter={StaticResource WasCopiedToColorConverter}}">
                                         <StackPanel>
                                             <TextBlock FontWeight="Bold" 
                                                        Margin="0,0,0,5"
-                                                       Foreground="{DynamicResource TextBrush}">
+                                                       Foreground="White">
                                                 <Run Text="Part "/>
                                                 <Run Text="{Binding PartNumber}"/>
                                             </TextBlock>
                                             <TextBlock Margin="0,0,0,10"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}">
+                                                       Foreground="White">
                                                 <Run Text="Characters: "/>
                                                 <Run Text="{Binding CharacterCount}"/>
                                                 <Run Text=" / "/>
@@ -276,5 +300,14 @@
                 </DockPanel>
             </Border>
         </Grid>
-    </DockPanel>
+        </DockPanel>
+        
+        <!-- Toast Container -->
+        <StackPanel x:Name="ToastContainer"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Right"
+                   Margin="20,0,20,20"
+                   Panel.ZIndex="1000"
+                   IsHitTestVisible="False"/>
+    </Grid>
 </Window>
