@@ -22,6 +22,20 @@ public partial class SettingsWindow : Window
         ExtensionsTextBox.Text = string.Join(", ", _settings.AllowedExtensions);
         PromptsListBox.ItemsSource = _settings.GlobalPrompts;
         FiltersListBox.ItemsSource = _settings.IgnoreFilters;
+        
+        // Load theme setting
+        switch (_settings.Theme)
+        {
+            case Models.ThemeMode.Light:
+                LightThemeRadio.IsChecked = true;
+                break;
+            case Models.ThemeMode.Dark:
+                DarkThemeRadio.IsChecked = true;
+                break;
+            case Models.ThemeMode.System:
+                SystemThemeRadio.IsChecked = true;
+                break;
+        }
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -34,6 +48,14 @@ public partial class SettingsWindow : Window
             .ToList();
 
         _settings.AllowedExtensions = extensions;
+        
+        // Save theme setting
+        if (LightThemeRadio.IsChecked == true)
+            _settings.Theme = Models.ThemeMode.Light;
+        else if (DarkThemeRadio.IsChecked == true)
+            _settings.Theme = Models.ThemeMode.Dark;
+        else if (SystemThemeRadio.IsChecked == true)
+            _settings.Theme = Models.ThemeMode.System;
 
         DialogResult = true;
         Close();

@@ -28,6 +28,12 @@ public partial class MainWindow : Window
         {
             await _viewModel.SaveStateAsync();
         };
+        
+        // Apply saved theme after window is loaded
+        Loaded += (s, e) =>
+        {
+            App.ApplyTheme(_viewModel.Settings.Theme);
+        };
     }
 
     private async void SelectProject_Click(object sender, RoutedEventArgs e)
@@ -102,6 +108,9 @@ public partial class MainWindow : Window
         var settingsWindow = new SettingsWindow(_viewModel.Settings);
         if (settingsWindow.ShowDialog() == true)
         {
+            // Apply theme change
+            App.ApplyTheme(_viewModel.Settings.Theme);
+            
             // Settings were saved
             _viewModel.ApplyFilters();
         }
