@@ -14,6 +14,14 @@ public partial class ToastNotification : UserControl
     public ToastNotification()
     {
         InitializeComponent();
+        Unloaded += OnUnloaded;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Clean up timer when control is unloaded
+        _timer?.Stop();
+        _timer = null;
     }
 
     public void Show(string message, ToastType type = ToastType.Success, int durationSeconds = 3)

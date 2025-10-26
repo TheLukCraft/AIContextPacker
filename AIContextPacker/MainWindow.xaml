@@ -184,10 +184,24 @@
                               DisplayMemberPath="Name"
                               SelectedValuePath="Id"
                               ItemsSource="{Binding GlobalPrompts}"
+                              Background="{DynamicResource SurfaceBrush}"
+                              Foreground="{DynamicResource TextBrush}"
                               VerticalAlignment="Center">
                         <ComboBox.ItemContainerStyle>
                             <Style TargetType="ComboBoxItem">
                                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                <Setter Property="Padding" Value="8,5"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
                             </Style>
                         </ComboBox.ItemContainerStyle>
                     </ComboBox>

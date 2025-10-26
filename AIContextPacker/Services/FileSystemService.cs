@@ -80,17 +80,20 @@ public class FileSystemService : IFileSystemService
                     }
                 }
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                // Skip directories without access
+                // Skip directories without access - common for system folders
+                System.Diagnostics.Debug.WriteLine($"Access denied to: {path}. Error: {ex.Message}");
             }
-            catch (DirectoryNotFoundException)
+            catch (DirectoryNotFoundException ex)
             {
                 // Skip directories that disappeared during enumeration
+                System.Diagnostics.Debug.WriteLine($"Directory not found: {path}. Error: {ex.Message}");
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
                 // Skip files that disappeared during enumeration
+                System.Diagnostics.Debug.WriteLine($"File not found during enumeration: {path}. Error: {ex.Message}");
             }
         }
         else

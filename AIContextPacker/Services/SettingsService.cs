@@ -49,7 +49,6 @@ public class SettingsService : ISettingsService
                 GlobalPrompts = DefaultPrompts.GetDefaultPrompts(),
                 ActiveFilters = new Dictionary<string, bool>
                 {
-                    { ".NET Build", true },
                     { "Git", true }
                 }
             };
@@ -68,7 +67,6 @@ public class SettingsService : ISettingsService
                 settings.IgnoreFilters = DefaultFilters.GetDefaultFilters();
                 settings.ActiveFilters = new Dictionary<string, bool>
                 {
-                    { ".NET Build", true },
                     { "Git", true }
                 };
                 await SaveSettingsAsync(settings);
