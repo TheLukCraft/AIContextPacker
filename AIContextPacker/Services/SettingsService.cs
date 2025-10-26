@@ -45,13 +45,17 @@ public class SettingsService : ISettingsService
         {
             var defaultSettings = new AppSettings
             {
-                IgnoreFilters = DefaultFilters.GetDefaultFilters(),
+                CustomIgnoreFilters = new List<IgnoreFilter>(), // Empty by default
                 GlobalPrompts = DefaultPrompts.GetDefaultPrompts(),
+<<<<<<< HEAD
                 ActiveFilters = new Dictionary<string, bool>
                 {
                     { ".NET Build", true },
                     { "Git", true }
                 }
+=======
+                ActiveFilters = new Dictionary<string, bool>()
+>>>>>>> a1b8a50 (feat: redesign Git Ignore Filters UI and add categorized predefined filters)
             };
             await SaveSettingsAsync(defaultSettings);
             return defaultSettings;
@@ -62,9 +66,11 @@ public class SettingsService : ISettingsService
             var json = await File.ReadAllTextAsync(_settingsFile);
             var settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
             
-            // Ensure we have default filters if none exist
-            if (settings.IgnoreFilters.Count == 0)
+            // Migrate old IgnoreFilters to CustomIgnoreFilters if needed
+            var settingsObj = JsonConvert.DeserializeObject<dynamic>(json);
+            if (settingsObj?.IgnoreFilters != null && settings.CustomIgnoreFilters.Count == 0)
             {
+<<<<<<< HEAD
                 settings.IgnoreFilters = DefaultFilters.GetDefaultFilters();
                 settings.ActiveFilters = new Dictionary<string, bool>
                 {
@@ -72,6 +78,10 @@ public class SettingsService : ISettingsService
                     { "Git", true }
                 };
                 await SaveSettingsAsync(settings);
+=======
+                // Migration path - but don't include default filters in custom
+                settings.CustomIgnoreFilters = new List<IgnoreFilter>();
+>>>>>>> a1b8a50 (feat: redesign Git Ignore Filters UI and add categorized predefined filters)
             }
             
             // Ensure we have default prompts if none exist
@@ -87,7 +97,7 @@ public class SettingsService : ISettingsService
         {
             return new AppSettings
             {
-                IgnoreFilters = DefaultFilters.GetDefaultFilters()
+                CustomIgnoreFilters = new List<IgnoreFilter>()
             };
         }
     }

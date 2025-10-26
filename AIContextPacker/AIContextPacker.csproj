@@ -16,4 +16,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\GitIgnores\*.gitignore" />
+  </ItemGroup>
+
 </Project>

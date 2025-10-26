@@ -12,7 +12,7 @@ public class AppSettings
         ".cs", ".html", ".css", ".js", ".ts", ".json", ".md", 
         ".java", ".py", ".xml", ".txt", ".xaml", ".tsx", ".jsx"
     };
-    public List<IgnoreFilter> IgnoreFilters { get; set; } = new();
+    public List<IgnoreFilter> CustomIgnoreFilters { get; set; } = new();
     public List<GlobalPrompt> GlobalPrompts { get; set; } = new();
     public Dictionary<string, bool> ActiveFilters { get; set; } = new();
 }

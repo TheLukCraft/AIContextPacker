@@ -137,6 +137,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+<<<<<<< HEAD
             <!-- Left Panel - File Selection -->
             <Border Grid.Column="0" 
                     BorderBrush="{DynamicResource BorderBrush}" 
@@ -171,6 +172,306 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </GroupBox>
+=======
+                        <TextBlock Text="Global Prompt:"
+                                   VerticalAlignment="Center"
+                                   Margin="20,0,5,0"
+                                   Foreground="{DynamicResource TextBrush}"/>
+                        <ComboBox Width="200"
+                                  SelectedValue="{Binding SelectedGlobalPromptId}"
+                                  DisplayMemberPath="Name"
+                                  SelectedValuePath="Id"
+                                  ItemsSource="{Binding GlobalPrompts}"
+                                  Background="{DynamicResource SurfaceBrush}"
+                                  Foreground="Black"
+                                  VerticalAlignment="Center">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem">
+                                    <Setter Property="Foreground"
+                                            Value="{DynamicResource TextBrush}"/>
+                                    <Setter Property="Background"
+                                            Value="{DynamicResource SurfaceBrush}"/>
+                                    <Setter Property="Padding"
+                                            Value="8,5"/>
+                                    <Setter Property="BorderThickness"
+                                            Value="1"/>
+                                    <Setter Property="BorderBrush"
+                                            Value="Transparent"/>
+                                    <Style.Triggers>
+
+                                        <Trigger Property="IsHighlighted"
+                                                Value="True">
+                                            <Setter Property="Background"
+                                                    Value="{DynamicResource PrimaryBrush}"/>
+                                            <Setter Property="Foreground"
+                                                    Value="White"/>
+                                            <Setter Property="BorderBrush"
+                                                    Value="{DynamicResource PrimaryBrush}"/>
+                                        </Trigger>
+
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsSelected"
+                                                        Value="True"/>
+                                                <Condition Property="IsHighlighted"
+                                                        Value="False"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Foreground"
+                                                    Value="Black"/>
+                                            <Setter Property="Background"
+                                                    Value="White"/>
+                                            <Setter Property="BorderBrush"
+                                                    Value="{DynamicResource BorderBrush}"/>
+                                        </MultiTrigger>
+
+                                    </Style.Triggers>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+
+                        <!-- Support Button -->
+                        <Button Content="❤️ Support Me"
+                                Click="SupportMe_Click"
+                                Margin="20,0,0,0"
+                                Padding="15,8"
+                                FontWeight="Medium"
+                                Cursor="Hand"
+                                VerticalAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background"
+                                            Value="#FF6351B5"/>
+                                    <Setter Property="Foreground"
+                                            Value="White"/>
+                                    <Setter Property="BorderThickness"
+                                            Value="0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="4"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver"
+                                                Value="True">
+                                            <Setter Property="Background"
+                                                    Value="#FF7C6BC5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Loading indicator -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding IsLoadingProject, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="300"
+                                     Height="20"
+                                     Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding LoadingStatus}"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextBrush}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Panel - File Selection -->
+                <Border Grid.Column="0"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Background="{DynamicResource SurfaceBrush}"
+                        CornerRadius="4"
+                        Padding="10">
+                    <DockPanel>
+                        <!-- Pinned Files Section -->
+                        <GroupBox DockPanel.Dock="Top"
+                                  Header="📌 Pinned Files (Priority)"
+                                  Margin="0,0,0,10"
+                                  Foreground="{DynamicResource TextBrush}">
+                            <ListBox ItemsSource="{Binding PinnedFiles}"
+                                     Height="100"
+                                     Background="{DynamicResource BackgroundBrush}"
+                                     Foreground="{DynamicResource TextBrush}"
+                                     BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="📌"
+                                                    Command="{Binding DataContext.TogglePinFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource TextBrush}"
+                                                    Cursor="Hand"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextBrush}"
+                                                       Margin="5,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </GroupBox>
+
+                        <!-- Filter Controls -->
+                        <Border DockPanel.Dock="Top"
+                                Margin="0,0,0,10"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="10">
+                            <StackPanel>
+                                <!-- Section Title -->
+                                <TextBlock Text="Git Ignore Filters:"
+                                           FontWeight="Bold"
+                                           FontSize="14"
+                                           Margin="0,0,0,10"
+                                           Foreground="{DynamicResource TextBrush}"/>
+
+                                <!-- Use Detected .gitignore Checkbox -->
+                                <Border BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="0,0,0,8"
+                                        Margin="0,0,0,8">
+                                    <CheckBox Content="Use detected .gitignore"
+                                              IsChecked="{Binding UseDetectedGitignore}"
+                                              IsEnabled="{Binding HasLocalGitignore}"
+                                              Foreground="{DynamicResource TextBrush}"
+                                              FontWeight="SemiBold"/>
+                                </Border>
+
+                                <!-- Categorized Filters -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              MaxHeight="196">
+                                    <ItemsControl ItemsSource="{Binding FilterCategories}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource BorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Margin="0,0,8,8"
+                                                        Background="{DynamicResource BackgroundBrush}"
+                                                        Padding="8">
+                                                    <StackPanel Width="180">
+                                                        <!-- Category Header -->
+                                                        <TextBlock Text="{Binding CategoryName}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                                   Margin="0,0,0,6"/>
+
+                                                        <!-- Filters List -->
+                                                        <ScrollViewer MaxHeight="200"
+                                                                      VerticalScrollBarVisibility="Auto">
+                                                            <ItemsControl ItemsSource="{Binding Filters}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <CheckBox Content="{Binding Name}"
+                                                                                  IsChecked="{Binding IsActive}"
+                                                                                  Margin="0,2"
+                                                                                  Foreground="{DynamicResource TextBrush}"
+                                                                                  FontSize="11"/>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </ScrollViewer>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Selection Buttons -->
+                        <StackPanel DockPanel.Dock="Top"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,10">
+                            <Button Content="Select All"
+                                    Command="{Binding SelectAllCommand}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Margin="0,0,5,0"/>
+                            <Button Content="Deselect All"
+                                    Command="{Binding DeselectAllCommand}"
+                                    Style="{StaticResource SecondaryButton}"/>
+                        </StackPanel>
+
+                        <!-- Project Files Section Header -->
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="📁 Project Files:"
+                                   FontWeight="Bold"
+                                   FontSize="14"
+                                   Margin="0,0,0,8"
+                                   Foreground="{DynamicResource TextBrush}"/>
+
+                        <!-- File Tree with Scroll -->
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto">
+                            <TreeView ItemsSource="{Binding RootNode.Children}"
+                                      Background="{DynamicResource BackgroundBrush}"
+                                      Foreground="{DynamicResource TextBrush}"
+                                      BorderThickness="0">
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="TreeViewItem">
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource TextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVisible}"
+                                                    Value="False">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsSelected}"
+                                                      Margin="0,0,5,0"/>
+                                            <Button Content="📌"
+                                                    Command="{Binding DataContext.TogglePinFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource TextBrush}"
+                                                    Cursor="Hand"
+                                                    Padding="2"
+                                                    Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+>>>>>>> a1b8a50 (feat: redesign Git Ignore Filters UI and add categorized predefined filters)
 
                     <!-- Filter Controls -->
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
