@@ -59,7 +59,7 @@ public class SettingsService : ISettingsService
             var settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
             
             // Remove duplicate extensions (bug fix for legacy settings files)
-            if (settings.AllowedExtensions.Count > 14)
+            if (settings.AllowedExtensions.Count > 121)
             {
                 settings.AllowedExtensions = settings.AllowedExtensions
                     .Distinct()

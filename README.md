@@ -29,8 +29,18 @@
 **3-Stage Filter Pipeline**:
 
 1. **Whitelist - File Extensions**: Only show allowed file types
-   - 14 default extensions: `.cs`, `.html`, `.css`, `.js`, `.ts`, `.json`, `.md`, `.java`, `.py`, `.xml`, `.txt`, `.xaml`, `.tsx`, `.jsx`
-   - Fully customizable in Settings
+   - **121 default extensions** covering all major programming languages and frameworks:
+     - **Source Code**: `.cs`, `.cpp`, `.h`, `.java`, `.py`, `.js`, `.ts`, `.jsx`, `.tsx`, `.php`, `.rb`, `.go`, `.rs`, `.swift`, `.kt`, `.scala`, `.lua`, `.r`, `.jl`, `.fs`, `.vb`, `.groovy`, `.dart`, `.hx`
+     - **Web Development**: `.html`, `.css`, `.scss`, `.sass`, `.jsx`, `.tsx`, `.vue` (via `.js`), `.erb`, `.blade.php`, `.twig`, `.mdx`
+     - **Configuration**: `.json`, `.xml`, `.yaml`, `.yml`, `.toml`, `.ini`, `.conf`, `.env`, `.plist`, `.settings`
+     - **Build/Project**: `.csproj`, `.sln`, `.gradle`, `.pom`, `.cmake`, `.gemfile`, `.gemspec`, `.package.json` (via `.json`), `.xproj`, `.iml`, `.workspace`
+     - **Documentation**: `.md`, `.txt`, `.bib`
+     - **Scripts**: `.sh`, `.bash`, `.bat`, `.ps1` (via `.ps`), `.zsh`, `.rake`
+     - **Game Development**: `.unity`, `.uproject`, `.tscn`, `.gd`, `.asset`, `.meta`, `.storyboard`, `.xib`
+     - **Data Science**: `.ipynb`, `.mat`, `.h5`, `.csv`, `.tsv`, `.pickle`, `.r`
+     - **Mobile**: `.apk`, `.aab`, `.xcworkspace`, `.xcproject`, `.swift`, `.kt`, `.dart`
+     - **And many more** including package files, lock files, and specialized formats
+   - Fully customizable in Settings - add or remove any extension
 
 2. **Blacklist - Ignore Filters**: 66 predefined filters across 8 categories
    - **Backend** (10): .NET, Node.js, Python, Java, Go, Laravel, Rails, Ruby, Rust, Scala
