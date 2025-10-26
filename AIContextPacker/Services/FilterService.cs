@@ -44,6 +44,18 @@ public class FilterService
         return true;
     }
 
+    public bool ShouldShowDirectory(string directoryPath)
+    {
+        // Check if directory should be shown based on filters and .gitignore
+        if (IsIgnoredByFilters(directoryPath))
+            return false;
+
+        if (IsIgnoredByGitignore(directoryPath))
+            return false;
+
+        return true;
+    }
+
     public bool ShouldShowInStructure(string path)
     {
         // For "Copy Structure", we show all files including those filtered by whitelist
@@ -94,63 +106,114 @@ public class FilterService
         // Remove leading/trailing whitespace
         pattern = pattern.Trim();
 
-        // Handle negation
+        // Handle negation (not implemented yet, just skip)
         if (pattern.StartsWith("!"))
             return false;
 
-        // Simple pattern matching
-        // Remove trailing slash for directory patterns
+        // Normalize path separators
+        path = path.Replace(Path.DirectorySeparatorChar, '/');
+        
+        // Check if pattern is for directories (ends with /)
+        bool isDirectoryPattern = pattern.EndsWith("/");
         var cleanPattern = pattern.TrimEnd('/');
         var cleanPath = path.TrimEnd('/');
 
-        // Handle wildcards
-        if (pattern.Contains("**"))
+        // Handle rooted patterns (starting with /)
+        bool isRooted = cleanPattern.StartsWith("/");
+        if (isRooted)
         {
-            // **/ means match in any directory
-            var patternPart = pattern.Replace("**/", "");
-            if (cleanPath.Contains(patternPart) || cleanPath.EndsWith(patternPart))
-                return true;
+            cleanPattern = cleanPattern.TrimStart('/');
         }
 
-        // Simple glob matching
-        if (pattern.Contains("*"))
+        // Handle ** wildcards
+        if (cleanPattern.Contains("**/"))
         {
-            var regexPattern = "^" + Regex.Escape(pattern)
-                .Replace("\\*", ".*")
-                .Replace("\\?", ".") + "$";
+            // **/ at the start means match anywhere
+            cleanPattern = cleanPattern.Replace("**/", "");
+            if (MatchesSimplePattern(cleanPath, cleanPattern) || 
+                cleanPath.Contains("/" + cleanPattern) ||
+                cleanPath.EndsWith("/" + cleanPattern))
+                return true;
+        }
+        else if (cleanPattern.Contains("**"))
+        {
+            // Handle other ** patterns
+            var regexPattern = "^" + Regex.Escape(cleanPattern)
+                .Replace("\\*\\*", ".*")
+                .Replace("\\*", "[^/]*")
+                .Replace("\\?", "[^/]") + "$";
             
             if (Regex.IsMatch(cleanPath, regexPattern, RegexOptions.IgnoreCase))
                 return true;
+        }
+        else if (cleanPattern.Contains("*") || cleanPattern.Contains("?"))
+        {
+            // Simple glob matching
+            if (MatchesSimplePattern(cleanPath, cleanPattern))
+                return true;
                 
-            // Also check if any path segment matches
+            // Check if any path segment matches
             var pathParts = cleanPath.Split('/');
-            foreach (var part in pathParts)
+            if (!isRooted)
             {
-                if (Regex.IsMatch(part, regexPattern, RegexOptions.IgnoreCase))
-                    return true;
+                foreach (var part in pathParts)
+                {
+                    if (MatchesSimplePattern(part, cleanPattern))
+                        return true;
+                }
             }
         }
         else
         {
-            // Exact match or path segment match
-            if (cleanPath.Equals(cleanPattern, StringComparison.OrdinalIgnoreCase))
-                return true;
+            // Exact match without wildcards
+            if (isRooted)
+            {
+                // Rooted pattern must match from the start
+                if (cleanPath.Equals(cleanPattern, StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (cleanPath.StartsWith(cleanPattern + "/", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            else
+            {
+                // Non-rooted pattern can match anywhere
+                if (cleanPath.Equals(cleanPattern, StringComparison.OrdinalIgnoreCase))
+                    return true;
                 
-            if (cleanPath.Contains("/" + cleanPattern, StringComparison.OrdinalIgnoreCase))
-                return true;
+                // Match as path segment
+                var pathParts = cleanPath.Split('/');
+                foreach (var part in pathParts)
+                {
+                    if (part.Equals(cleanPattern, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
                 
-            if (cleanPath.EndsWith(cleanPattern, StringComparison.OrdinalIgnoreCase))
-                return true;
+                // Match if it appears as a complete segment in the path
+                if (cleanPath.Contains("/" + cleanPattern + "/", StringComparison.OrdinalIgnoreCase) ||
+                    cleanPath.EndsWith("/" + cleanPattern, StringComparison.OrdinalIgnoreCase) ||
+                    cleanPath.StartsWith(cleanPattern + "/", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
         }
 
         return false;
     }
 
+    private bool MatchesSimplePattern(string text, string pattern)
+    {
+        var regexPattern = "^" + Regex.Escape(pattern)
+            .Replace("\\*", "[^/]*")
+            .Replace("\\?", "[^/]") + "$";
+        
+        return Regex.IsMatch(text, regexPattern, RegexOptions.IgnoreCase);
+    }
+
     private string GetRelativePath(string fullPath)
     {
-        if (fullPath.StartsWith(_basePath))
+        if (fullPath.StartsWith(_basePath, StringComparison.OrdinalIgnoreCase))
         {
-            var relative = fullPath.Substring(_basePath.Length).TrimStart(Path.DirectorySeparatorChar);
+            var relative = fullPath.Substring(_basePath.Length)
+                .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             return relative.Replace(Path.DirectorySeparatorChar, '/');
         }
         return fullPath.Replace(Path.DirectorySeparatorChar, '/');
