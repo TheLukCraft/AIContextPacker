@@ -183,6 +183,7 @@ AIContextPacker/
 - Filter checkboxes adjacent to tree for easy access
 - Part preview with read-only modal window
 - Toolbar with project selection, settings, and support button
+- Selection buttons (Select All/Deselect All) positioned below "Project Files" header for intuitive workflow
 
 **Visual Feedback:**
 - Generate button disables after generation until changes made
@@ -356,6 +357,11 @@ AIContextPacker/
 11. ✅ Application not closing (proper async shutdown with flag)
 12. ✅ ComboBox dropdown unreadable (ItemContainerStyle triggers)
 13. ✅ Timer leaks (Unloaded event cleanup)
+14. ✅ Custom filter name not updating after edit (reference-based comparison with OnFilterChanged notification)
+15. ✅ Max char limit not syncing between Settings and Main window (explicit sync after settings save)
+16. ✅ Global prompt not defaulting to "(None)" (SessionState restoration with null default)
+17. ✅ No minimum window size enforced (MinWidth=850, MinHeight=760 added)
+18. ✅ Selection buttons positioned incorrectly (moved below "Project Files" header for better UX)
 
 **Rationale:** Professional-grade code that's maintainable by teams and AI assistants. All major bugs identified and fixed.
 
@@ -394,6 +400,6 @@ AIContextPacker/
 ---
 
 **Status:** ✅ Core architecture complete and production-ready  
-**Version:** 1.0.1  
-**Phase:** Update notification system implemented  
+**Version:** 1.0.2  
+**Phase:** Bug fixing and UX improvements completed  
 **Next:** Icon creation, potential feature additions based on user feedback

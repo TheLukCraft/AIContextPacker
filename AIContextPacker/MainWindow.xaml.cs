@@ -132,6 +132,9 @@ public partial class MainWindow : Window
             // Apply theme change
             App.ApplyTheme(_viewModel.Settings.Theme);
             
+            // Sync MaxCharsLimit from Settings to ViewModel
+            _viewModel.MaxCharsLimit = _viewModel.Settings.MaxCharsLimit;
+            
             // Refresh filters and prompts to show newly added items
             _viewModel.RefreshFiltersAndPrompts();
             

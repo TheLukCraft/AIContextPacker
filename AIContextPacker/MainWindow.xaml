@@ -7,8 +7,10 @@
         xmlns:converters="clr-namespace:AIContextPacker.Converters"
         mc:Ignorable="d"
         Title="AI Context Packer"
-        Height="800"
+        Height="850"
         Width="1400"
+        MinWidth="850"
+        MinHeight="760"
         Background="{DynamicResource BackgroundBrush}"
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
@@ -469,6 +471,14 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Project Files Section Header -->
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="📁 Project Files:"
+                                   FontWeight="Bold"
+                                   FontSize="14"
+                                   Margin="0,0,0,8"
+                                   Foreground="{DynamicResource TextBrush}"/>
+
                         <!-- Selection Buttons -->
                         <StackPanel DockPanel.Dock="Top"
                                     Orientation="Horizontal"
@@ -481,14 +491,6 @@
                                     Command="{Binding DeselectAllCommand}"
                                     Style="{StaticResource SecondaryButton}"/>
                         </StackPanel>
-
-                        <!-- Project Files Section Header -->
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="📁 Project Files:"
-                                   FontWeight="Bold"
-                                   FontSize="14"
-                                   Margin="0,0,0,8"
-                                   Foreground="{DynamicResource TextBrush}"/>
 
                         <!-- File Tree with Scroll -->
                         <ScrollViewer x:Name="ProjectFilesScrollViewer"

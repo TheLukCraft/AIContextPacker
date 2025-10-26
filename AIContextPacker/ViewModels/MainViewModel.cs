@@ -166,6 +166,11 @@ public partial class MainViewModel : ObservableObject
 
         var sessionState = await _settingsService.LoadSessionStateAsync();
         UseDetectedGitignore = sessionState.UseDetectedGitignore;
+        
+        // Restore selected global prompt (defaults to null/"(None)" if not set)
+        SelectedGlobalPromptId = string.IsNullOrEmpty(sessionState.SelectedGlobalPrompt) 
+            ? null 
+            : sessionState.SelectedGlobalPrompt;
 
         if (!string.IsNullOrEmpty(sessionState.LastProjectPath) && 
             Directory.Exists(sessionState.LastProjectPath))
@@ -425,7 +430,7 @@ public partial class MainViewModel : ObservableObject
         {
             // Remove filters that no longer exist
             var filtersToRemove = customCategory.Filters
-                .Where(fvm => !Settings.CustomIgnoreFilters.Any(f => f.Name == fvm.Filter.Name))
+                .Where(fvm => !Settings.CustomIgnoreFilters.Contains(fvm.Filter))
                 .ToList();
             
             foreach (var filter in filtersToRemove)
@@ -433,11 +438,18 @@ public partial class MainViewModel : ObservableObject
                 customCategory.Filters.Remove(filter);
             }
 
-            // Add new filters
+            // Update existing filters and add new ones
             foreach (var filter in Settings.CustomIgnoreFilters)
             {
-                if (!customCategory.Filters.Any(fvm => fvm.Filter.Name == filter.Name))
+                var existingVm = customCategory.Filters.FirstOrDefault(fvm => fvm.Filter == filter);
+                if (existingVm != null)
                 {
+                    // Filter already exists, trigger property change notification by reassigning
+                    existingVm.Filter = filter;
+                }
+                else
+                {
+                    // New filter, add it
                     var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
                     var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
                     filterVm.PropertyChanged += (s, e) =>
