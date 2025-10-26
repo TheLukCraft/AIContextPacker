@@ -25,6 +25,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IFileSelectionService _fileSelectionService;
     private readonly IPinService _pinService;
     private readonly IFilterCategoryService _filterCategoryService;
+    private readonly ISessionStateService _sessionStateService;
 
     public event Action<string>? ToastRequested;
 
@@ -83,7 +84,8 @@ public partial class MainViewModel : ObservableObject
         IProjectService projectService,
         IFileSelectionService fileSelectionService,
         IPinService pinService,
-        IFilterCategoryService filterCategoryService)
+        IFilterCategoryService filterCategoryService,
+        ISessionStateService sessionStateService)
     {
         _fileSystemService = fileSystemService;
         _settingsService = settingsService;
@@ -93,6 +95,7 @@ public partial class MainViewModel : ObservableObject
         _fileSelectionService = fileSelectionService;
         _pinService = pinService;
         _filterCategoryService = filterCategoryService;
+        _sessionStateService = sessionStateService;
 
         _ = InitializeAsync();
     }
@@ -136,29 +139,17 @@ public partial class MainViewModel : ObservableObject
             }
         }
 
-        var sessionState = await _settingsService.LoadSessionStateAsync();
+        var sessionState = await _sessionStateService.RestoreSessionStateAsync(
+            LoadProjectAsync,
+            TogglePinFile,
+            FindNodeByPath);
+        
         UseDetectedGitignore = sessionState.UseDetectedGitignore;
         
         // Restore selected global prompt (defaults to null/"(None)" if not set)
         SelectedGlobalPromptId = string.IsNullOrEmpty(sessionState.SelectedGlobalPrompt) 
             ? null 
             : sessionState.SelectedGlobalPrompt;
-
-        if (!string.IsNullOrEmpty(sessionState.LastProjectPath) && 
-            Directory.Exists(sessionState.LastProjectPath))
-        {
-            await LoadProjectAsync(sessionState.LastProjectPath);
-            
-            // Restore pinned files
-            foreach (var pinnedPath in sessionState.PinnedFiles)
-            {
-                var node = FindNodeByPath(RootNode, pinnedPath);
-                if (node != null)
-                {
-                    TogglePinFile(node);
-                }
-            }
-        }
     }
 
     private async Task OnFilterActiveChangedAsync(string filterName, bool isActive)
@@ -467,16 +458,12 @@ public partial class MainViewModel : ObservableObject
 
     public async Task SaveStateAsync()
     {
-        var sessionState = new SessionState
-        {
-            LastProjectPath = CurrentProjectPath,
-            PinnedFiles = _pinService.GetPinnedFilePaths().ToList(),
-            SelectedFiles = RootNode != null ? _fileSelectionService.GetSelectedFilePaths(RootNode).ToList() : new List<string>(),
-            UseDetectedGitignore = UseDetectedGitignore,
-            SelectedGlobalPrompt = SelectedGlobalPromptId ?? string.Empty
-        };
-
-        await _settingsService.SaveSessionStateAsync(sessionState);
+        await _sessionStateService.SaveSessionStateAsync(
+            CurrentProjectPath,
+            RootNode,
+            SelectedGlobalPromptId,
+            UseDetectedGitignore);
+        
         await _settingsService.SaveSettingsAsync(Settings);
     }
 }

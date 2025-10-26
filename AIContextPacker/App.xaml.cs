@@ -74,6 +74,7 @@ public partial class App : Application
         services.AddSingleton<IFileSelectionService, FileSelectionService>();
         services.AddSingleton<IPinService, PinService>();
         services.AddSingleton<IFilterCategoryService, FilterCategoryService>();
+        services.AddSingleton<ISessionStateService, SessionStateService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
