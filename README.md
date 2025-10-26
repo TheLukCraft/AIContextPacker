@@ -27,9 +27,36 @@
 
 ### 🔍 Advanced Filtering System
 **3-Stage Filter Pipeline**:
-1. **Whitelist**: Only show allowed file extensions (13 defaults: .cs, .js, .ts, .py, .html, .css, .json, .md, .xml, .txt, .xaml, .tsx, .jsx)
-2. **Blacklist**: 8 predefined filter sets (.NET, Node.js, Python, Angular, React, Vue, Java, C++) with gitignore-style patterns
+
+1. **Whitelist - File Extensions**: Only show allowed file types
+   - **121 default extensions** covering all major programming languages and frameworks:
+     - **Source Code**: `.cs`, `.cpp`, `.h`, `.java`, `.py`, `.js`, `.ts`, `.jsx`, `.tsx`, `.php`, `.rb`, `.go`, `.rs`, `.swift`, `.kt`, `.scala`, `.lua`, `.r`, `.jl`, `.fs`, `.vb`, `.groovy`, `.dart`, `.hx`
+     - **Web Development**: `.html`, `.css`, `.scss`, `.sass`, `.jsx`, `.tsx`, `.vue` (via `.js`), `.erb`, `.blade.php`, `.twig`, `.mdx`
+     - **Configuration**: `.json`, `.xml`, `.yaml`, `.yml`, `.toml`, `.ini`, `.conf`, `.env`, `.plist`, `.settings`
+     - **Build/Project**: `.csproj`, `.sln`, `.gradle`, `.pom`, `.cmake`, `.gemfile`, `.gemspec`, `.package.json` (via `.json`), `.xproj`, `.iml`, `.workspace`
+     - **Documentation**: `.md`, `.txt`, `.bib`
+     - **Scripts**: `.sh`, `.bash`, `.bat`, `.ps1` (via `.ps`), `.zsh`, `.rake`
+     - **Game Development**: `.unity`, `.uproject`, `.tscn`, `.gd`, `.asset`, `.meta`, `.storyboard`, `.xib`
+     - **Data Science**: `.ipynb`, `.mat`, `.h5`, `.csv`, `.tsv`, `.pickle`, `.r`
+     - **Mobile**: `.apk`, `.aab`, `.xcworkspace`, `.xcproject`, `.swift`, `.kt`, `.dart`
+     - **And many more** including package files, lock files, and specialized formats
+   - Fully customizable in Settings - add or remove any extension
+
+2. **Blacklist - Ignore Filters**: 66 predefined filters across 8 categories
+   - **Backend** (10): .NET, Node.js, Python, Java, Go, Laravel, Rails, Ruby, Rust, Scala
+   - **Frontend** (10): Angular, Next.js, Sass, Jekyll, GitHub Pages, GitBook, ExtJS, WordPress, Drupal, Joomla
+   - **Mobile** (9): Android, Kotlin, Swift, Objective-C, Flutter, Dart, Xcode, Appcelerator Titanium, Gradle
+   - **DevOps/CI** (9): Chef, Jenkins, Terraform, Packer, Maven, CMake, Autotools, SCons, Composer
+   - **Operating Systems** (4): Windows, Linux, Arch Linux, Nix
+   - **IDEs/Editors** (9): JetBrains, Visual Studio, VS Code, Eclipse, Vim, Emacs, Sublime Text, Notepad++, Kate
+   - **Game Development** (9): Unity, Unreal Engine, Godot, Flax Engine, Adventure Game Studio, Haxe, C++, Lua, Processing
+   - **Data Science/ML** (6): R, Julia, MATLAB, Fortran, CUDA, TeX
+   - Each filter uses gitignore-style patterns from official GitHub templates
+   - Create custom filters in Settings
+
 3. **Local .gitignore**: Automatically detected and optionally applied
+   - Respects your project's existing ignore rules
+   - Can be toggled on/off per project
 
 ### 💾 State Persistence
 - **Session Restore**: Automatically saves and restores your workspace

@@ -58,6 +58,17 @@ public class SettingsService : ISettingsService
             var json = await File.ReadAllTextAsync(_settingsFile);
             var settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
             
+            // Remove duplicate extensions (bug fix for legacy settings files)
+            if (settings.AllowedExtensions.Count > 121)
+            {
+                settings.AllowedExtensions = settings.AllowedExtensions
+                    .Distinct()
+                    .ToList();
+                
+                // Save cleaned settings immediately
+                await SaveSettingsAsync(settings);
+            }
+            
             // Migrate old IgnoreFilters to CustomIgnoreFilters if needed
             var settingsObj = JsonConvert.DeserializeObject<dynamic>(json);
             if (settingsObj?.IgnoreFilters != null && settings.CustomIgnoreFilters.Count == 0)
