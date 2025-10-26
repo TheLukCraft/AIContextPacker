@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Windows;
@@ -7,6 +8,9 @@ using AIContextPacker.Services;
 using AIContextPacker.Services.Interfaces;
 using AIContextPacker.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace AIContextPacker;
 
@@ -18,6 +22,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Configure Serilog
+        ConfigureLogging();
+
         var services = new ServiceCollection();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
@@ -26,8 +33,37 @@ public partial class App : Application
         mainWindow.Show();
     }
 
+    private void ConfigureLogging()
+    {
+        var logsFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "AIContextPacker", "Logs");
+
+        Directory.CreateDirectory(logsFolder);
+
+        var logFile = Path.Combine(logsFolder, "app-.log");
+
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File(
+                logFile,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+
+        Log.Information("Application starting up");
+    }
+
     private void ConfigureServices(ServiceCollection services)
     {
+        // Logging
+        services.AddLogging(builder =>
+        {
+            builder.AddSerilog(dispose: true);
+            builder.SetMinimumLevel(LogLevel.Debug);
+        });
+
         // Services
         services.AddSingleton<IFileSystemService, FileSystemService>();
         services.AddSingleton<ISettingsService, SettingsService>();
@@ -44,6 +80,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        Log.Information("Application shutting down");
+        Log.CloseAndFlush();
         _serviceProvider?.Dispose();
         base.OnExit(e);
     }
