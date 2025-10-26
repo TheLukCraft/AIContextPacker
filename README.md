@@ -39,14 +39,6 @@
 - **Active Filters**: Remembers which filters were enabled
 - **Settings**: All preferences saved in %AppData%\AIContextPacker\
 
-## 📸 Screenshots
-
-### Light Theme
-Modern, clean interface optimized for daytime coding with Windows 11 design language.
-
-### Dark Theme
-Eye-friendly dark mode with Material Design Indigo accent, perfect for extended coding sessions.
-
 ## � Getting Started
 
 ### Requirements
@@ -113,40 +105,6 @@ dotnet run
    - Use "Copy Structure" for project tree overview
    - Button turns orange after copying for visual feedback
 
-### Advanced Features
-
-#### Custom Ignore Filters
-**Settings → Ignore Filters (Blacklist)**
-- Create custom filter sets with descriptive names
-- Use gitignore-style patterns:
-  - `*.log` - all log files
-  - `**/bin/` - bin folders at any level
-  - `node_modules/` - specific folder names
-- Activate multiple filters simultaneously
-- Example filters included: .NET, Node.js, Python, Angular, React, Vue, Java, C++
-
-#### Global Prompts Management
-**Settings → Global Prompts**
-- Create reusable prompt templates for different tasks
-- Edit or delete existing prompts
-- Predefined prompts include:
-  - 🔍 Code Review Expert
-  - 🔧 Refactoring Specialist
-  - 🧪 Test Writing Expert
-  - 📚 Documentation Writer
-  - 🎨 UI/UX Specialist
-  - ⚡ Performance Optimizer
-  - 🔒 Security Auditor
-  - 🏗️ Architecture Designer
-  - 🐛 Debugging Assistant
-  - And more...
-
-#### Theme Customization
-**Settings → Theme**
-- **Light Mode**: Clean, professional Windows 11 style
-- **Dark Mode**: Eye-friendly with Material Design Indigo accents
-- **System**: Automatically follows Windows theme
-
 #### Tutorial & Support
 - **Help → Tutorial**: 7-step interactive guide for new users
 - **Help → About**: Developer information and social links
@@ -181,30 +139,10 @@ AIContextPacker/
 └── Controls/            # Custom controls (ToastNotification)
 ```
 
-### Key Design Decisions
-
-**3-Stage Filtering Algorithm:**
-1. **Whitelist** (Extension filter) - Only allowed file types shown
-2. **Blacklist** (Ignore filters) - User-defined gitignore patterns
-3. **Local .gitignore** - Project-specific exclusions
-
-**Part Generation Algorithm:**
-- Validates no single file exceeds limit before processing
-- Pinned files fill parts first, sequentially
-- Regular files fill remaining space
-- Never splits a file between parts
-- Global prompt prepended to Part 1 if selected
-
 **State Persistence:**
 - Settings: `%AppData%\AIContextPacker\settings.json`
 - Session: `%AppData%\AIContextPacker\session.json`
 - Recent: `%AppData%\AIContextPacker\recent.json`
-
-**Performance Optimizations:**
-- Tree building on background thread (Task.Run) prevents UI freeze
-- Async file I/O throughout
-- Lazy tree rendering
-- Proper resource cleanup (timers, event handlers)
 
 ## 🤝 Contributing
 
@@ -273,7 +211,6 @@ I turn complex challenges into intuitive software that drives your business. Spe
 - Drag & drop support
 
 ### Planned 🚧
-- Application icon
 - Cloud sync for settings
 - Export formats (Markdown, JSON)
 - Plugin architecture
@@ -306,79 +243,3 @@ All major bugs have been resolved in version 1.0.0. If you encounter any issues,
 - All major bugs fixed
 
 ---
-
-**Made with ❤️ by TheLukCraft**
-
-If AI Context Packer saved you time, [buy me a slice of pizza](https://buymeacoffee.com/thelukcraft)! 🍕
-│   └── Interfaces/      # Service contracts
-├── Converters/          # WPF value converters
-├── Helpers/             # Utilities
-└── Resources/           # Themes & resources
-```
-
-### Key Design Decisions
-- **SOLID Principles**: Single responsibility, dependency inversion
-- **Async/Await**: All I/O operations are non-blocking
-- **Service Layer**: Testable business logic isolated from UI
-- **State Persistence**: Settings saved in `%AppData%/AIContextPacker`
-
-## Configuration
-
-### Settings Location
-All settings are stored in:
-```
-%AppData%/AIContextPacker/
-├── settings.json      # User preferences
-├── session.json       # Last workspace state
-└── recent.json        # Recent projects
-```
-
-### Default Allowed Extensions
-`.cs`, `.html`, `.css`, `.js`, `.ts`, `.json`, `.md`, `.java`, `.py`, `.xml`, `.txt`, `.xaml`, `.tsx`, `.jsx`
-
-## Troubleshooting
-
-### "File exceeds maximum character limit" Error
-**Cause**: A single file is larger than your configured limit.  
-**Solution**: Increase the Max Chars Limit in the toolbar, or exclude the large file.
-
-### Files Not Appearing in Tree
-**Cause**: Extension not in whitelist, or filtered by ignore rules.  
-**Solution**: 
-1. Check Settings → Allowed Extensions
-2. Disable active ignore filters temporarily
-3. Uncheck "Use detected .gitignore"
-
-### Application Doesn't Save State
-**Cause**: Permissions issue with %AppData% folder.  
-**Solution**: Ensure the application has write permissions to `%AppData%/AIContextPacker`
-
-## Contributing
-
-This project follows industry-standard .NET development practices:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Code Standards
-- Follow SOLID principles
-- Use async/await for I/O operations
-- Maintain MVVM separation
-- Add XML documentation for public APIs
-- Write clean, self-documenting code
-
-## License
-
-[Add your license here]
-
-## Acknowledgments
-
-- Built with [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet)
-- Inspired by the needs of AI-assisted development workflows
-
----
-
-**Made with ❤️ for developers working with AI assistants**
