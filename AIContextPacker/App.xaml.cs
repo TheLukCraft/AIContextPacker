@@ -70,6 +70,9 @@ public partial class App : Application
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IUpdateService, UpdateService>();
+        services.AddSingleton<IProjectService, ProjectService>();
+        services.AddSingleton<IFileSelectionService, FileSelectionService>();
+        services.AddSingleton<IPinService, PinService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

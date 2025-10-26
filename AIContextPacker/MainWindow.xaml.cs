@@ -138,8 +138,8 @@ public partial class MainWindow : Window
             // Refresh filters and prompts to show newly added items
             _viewModel.RefreshFiltersAndPrompts();
             
-            // Settings were saved
-            _viewModel.ApplyFilters();
+            // Settings were saved - apply filters asynchronously
+            _ = _viewModel.ApplyFiltersAsync();
         }
     }
 
