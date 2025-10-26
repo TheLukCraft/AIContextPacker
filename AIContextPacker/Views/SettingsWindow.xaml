@@ -129,10 +129,16 @@
                     </DockPanel>
                 </GroupBox>
 
-                <!-- Ignore Filters -->
-                <GroupBox Header="Ignore Filters (Blacklist)" 
+                <!-- Custom Git Ignore Filters -->
+                <GroupBox Header="Git Ignore Filters (Custom)" 
                           Foreground="{DynamicResource TextBrush}">
                     <DockPanel Margin="10">
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="Create your own custom ignore filters. Predefined filters (Backend, Frontend, etc.) are managed in the main window."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,10"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   FontStyle="Italic"/>
                         <StackPanel DockPanel.Dock="Bottom" 
                                     Orientation="Horizontal" 
                                     Margin="0,10,0,0">

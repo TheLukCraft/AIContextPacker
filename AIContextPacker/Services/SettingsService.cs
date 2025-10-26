@@ -45,12 +45,9 @@ public class SettingsService : ISettingsService
         {
             var defaultSettings = new AppSettings
             {
-                IgnoreFilters = DefaultFilters.GetDefaultFilters(),
+                CustomIgnoreFilters = new List<IgnoreFilter>(), // Empty by default
                 GlobalPrompts = DefaultPrompts.GetDefaultPrompts(),
-                ActiveFilters = new Dictionary<string, bool>
-                {
-                    { "Git", true }
-                }
+                ActiveFilters = new Dictionary<string, bool>()
             };
             await SaveSettingsAsync(defaultSettings);
             return defaultSettings;
@@ -61,15 +58,12 @@ public class SettingsService : ISettingsService
             var json = await File.ReadAllTextAsync(_settingsFile);
             var settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
             
-            // Ensure we have default filters if none exist
-            if (settings.IgnoreFilters.Count == 0)
+            // Migrate old IgnoreFilters to CustomIgnoreFilters if needed
+            var settingsObj = JsonConvert.DeserializeObject<dynamic>(json);
+            if (settingsObj?.IgnoreFilters != null && settings.CustomIgnoreFilters.Count == 0)
             {
-                settings.IgnoreFilters = DefaultFilters.GetDefaultFilters();
-                settings.ActiveFilters = new Dictionary<string, bool>
-                {
-                    { "Git", true }
-                };
-                await SaveSettingsAsync(settings);
+                // Migration path - but don't include default filters in custom
+                settings.CustomIgnoreFilters = new List<IgnoreFilter>();
             }
             
             // Ensure we have default prompts if none exist
@@ -85,7 +79,7 @@ public class SettingsService : ISettingsService
         {
             return new AppSettings
             {
-                IgnoreFilters = DefaultFilters.GetDefaultFilters()
+                CustomIgnoreFilters = new List<IgnoreFilter>()
             };
         }
     }
