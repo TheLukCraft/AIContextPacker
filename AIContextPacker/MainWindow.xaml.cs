@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using AIContextPacker.Controls;
 using AIContextPacker.Helpers;
 using AIContextPacker.Models;
@@ -131,6 +132,9 @@ public partial class MainWindow : Window
             // Apply theme change
             App.ApplyTheme(_viewModel.Settings.Theme);
             
+            // Refresh filters and prompts to show newly added items
+            _viewModel.RefreshFiltersAndPrompts();
+            
             // Settings were saved
             _viewModel.ApplyFilters();
         }
@@ -216,5 +220,19 @@ public partial class MainWindow : Window
         var toast = new ToastNotification();
         ToastContainer.Children.Add(toast);
         toast.Show(message, ToastType.Success);
+    }
+
+    private void TreeView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is TreeView && !e.Handled)
+        {
+            e.Handled = true;
+            var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender
+            };
+            ProjectFilesScrollViewer.RaiseEvent(eventArg);
+        }
     }
 }

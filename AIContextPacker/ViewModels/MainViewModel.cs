@@ -417,6 +417,57 @@ public partial class MainViewModel : ObservableObject
         MarkAsChanged();
     }
 
+    public void RefreshFiltersAndPrompts()
+    {
+        // Refresh custom filters
+        var customCategory = FilterCategories.FirstOrDefault(c => c.CategoryName == "Custom");
+        if (customCategory != null)
+        {
+            // Remove filters that no longer exist
+            var filtersToRemove = customCategory.Filters
+                .Where(fvm => !Settings.CustomIgnoreFilters.Any(f => f.Name == fvm.Filter.Name))
+                .ToList();
+            
+            foreach (var filter in filtersToRemove)
+            {
+                customCategory.Filters.Remove(filter);
+            }
+
+            // Add new filters
+            foreach (var filter in Settings.CustomIgnoreFilters)
+            {
+                if (!customCategory.Filters.Any(fvm => fvm.Filter.Name == filter.Name))
+                {
+                    var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
+                    var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
+                    filterVm.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
+                        {
+                            Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
+                            ApplyFilters();
+                        }
+                    };
+                    customCategory.Filters.Add(filterVm);
+                }
+            }
+        }
+
+        // Refresh global prompts
+        GlobalPrompts.Clear();
+        GlobalPrompts.Add(new GlobalPrompt
+        {
+            Id = null,
+            Name = "(None)",
+            Content = string.Empty
+        });
+
+        foreach (var prompt in Settings.GlobalPrompts)
+        {
+            GlobalPrompts.Add(prompt);
+        }
+    }
+
     private void ApplyFiltersRecursive(FileTreeNode node, FilterService filterService)
     {
         if (!node.IsDirectory)

@@ -491,12 +491,14 @@
                                    Foreground="{DynamicResource TextBrush}"/>
 
                         <!-- File Tree with Scroll -->
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="ProjectFilesScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Auto">
                             <TreeView ItemsSource="{Binding RootNode.Children}"
                                       Background="{DynamicResource BackgroundBrush}"
                                       Foreground="{DynamicResource TextBrush}"
-                                      BorderThickness="0">
+                                      BorderThickness="0"
+                                      PreviewMouseWheel="TreeView_PreviewMouseWheel">
                                 <TreeView.ItemContainerStyle>
                                     <Style TargetType="TreeViewItem">
                                         <Setter Property="Foreground"

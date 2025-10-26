@@ -146,9 +146,9 @@ public class FilterService
             if (Regex.IsMatch(cleanPath, regexPattern, RegexOptions.IgnoreCase))
                 return true;
         }
-        else if (cleanPattern.Contains("*") || cleanPattern.Contains("?"))
+        else if (cleanPattern.Contains("*") || cleanPattern.Contains("?") || cleanPattern.Contains("["))
         {
-            // Simple glob matching
+            // Simple glob matching (includes *, ?, and [] patterns)
             if (MatchesSimplePattern(cleanPath, cleanPattern))
                 return true;
                 
@@ -201,9 +201,44 @@ public class FilterService
 
     private bool MatchesSimplePattern(string text, string pattern)
     {
-        var regexPattern = "^" + Regex.Escape(pattern)
-            .Replace("\\*", "[^/]*")
-            .Replace("\\?", "[^/]") + "$";
+        // Convert glob pattern to regex
+        var regexPattern = "^";
+        
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            
+            if (c == '*')
+            {
+                regexPattern += "[^/]*";
+            }
+            else if (c == '?')
+            {
+                regexPattern += "[^/]";
+            }
+            else if (c == '[')
+            {
+                // Handle character class [abc] or [a-z]
+                int closeBracket = pattern.IndexOf(']', i);
+                if (closeBracket > i)
+                {
+                    // Extract the character class and add it as-is to regex
+                    regexPattern += pattern.Substring(i, closeBracket - i + 1);
+                    i = closeBracket; // Skip to closing bracket
+                }
+                else
+                {
+                    // No closing bracket, treat as literal
+                    regexPattern += Regex.Escape(c.ToString());
+                }
+            }
+            else
+            {
+                regexPattern += Regex.Escape(c.ToString());
+            }
+        }
+        
+        regexPattern += "$";
         
         return Regex.IsMatch(text, regexPattern, RegexOptions.IgnoreCase);
     }
