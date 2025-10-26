@@ -392,8 +392,20 @@ public partial class MainViewModel : ObservableObject
         
         var gitignorePatterns = UseDetectedGitignore ? _localGitignorePatterns : new List<string>();
 
-        System.Diagnostics.Debug.WriteLine($"ApplyFilters: Active filters count: {activeFilters.Count}");
-        System.Diagnostics.Debug.WriteLine($"ApplyFilters: Gitignore patterns count: {gitignorePatterns.Count}");
+        System.Diagnostics.Debug.WriteLine($"=== ApplyFilters ===");
+        System.Diagnostics.Debug.WriteLine($"Active filters count: {activeFilters.Count}");
+        System.Diagnostics.Debug.WriteLine($"Gitignore patterns count: {gitignorePatterns.Count}");
+        System.Diagnostics.Debug.WriteLine($"Base path: {CurrentProjectPath}");
+        
+        foreach (var filter in activeFilters)
+        {
+            System.Diagnostics.Debug.WriteLine($"  Filter: {filter.Name} - Patterns: {string.Join(", ", filter.Patterns)}");
+        }
+        
+        foreach (var pattern in gitignorePatterns.Take(10))
+        {
+            System.Diagnostics.Debug.WriteLine($"  Gitignore: {pattern}");
+        }
 
         var filterService = new FilterService(
             Settings.AllowedExtensions,
@@ -409,16 +421,29 @@ public partial class MainViewModel : ObservableObject
     {
         if (!node.IsDirectory)
         {
+            // For files, check if they should be included
             var wasVisible = node.IsVisible;
             node.IsVisible = filterService.ShouldIncludeFile(node.FullPath);
             
             if (wasVisible != node.IsVisible)
             {
-                System.Diagnostics.Debug.WriteLine($"File visibility changed: {node.Name} -> {node.IsVisible}");
+                System.Diagnostics.Debug.WriteLine($"File visibility changed: {node.Name} ({node.FullPath}) -> {node.IsVisible}");
             }
         }
         else
         {
+            // First check if the directory itself should be filtered out
+            var shouldShowDir = filterService.ShouldShowDirectory(node.FullPath);
+            
+            if (!shouldShowDir)
+            {
+                // Directory is filtered out - hide it and all children
+                node.IsVisible = false;
+                System.Diagnostics.Debug.WriteLine($"Directory filtered out: {node.Name} ({node.FullPath})");
+                return;
+            }
+            
+            // Directory is not filtered, process children
             foreach (var child in node.Children)
             {
                 ApplyFiltersRecursive(child, filterService);
