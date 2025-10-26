@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IProjectService _projectService;
     private readonly IFileSelectionService _fileSelectionService;
     private readonly IPinService _pinService;
+    private readonly IFilterCategoryService _filterCategoryService;
 
     public event Action<string>? ToastRequested;
 
@@ -81,7 +82,8 @@ public partial class MainViewModel : ObservableObject
         IClipboardService clipboardService,
         IProjectService projectService,
         IFileSelectionService fileSelectionService,
-        IPinService pinService)
+        IPinService pinService,
+        IFilterCategoryService filterCategoryService)
     {
         _fileSystemService = fileSystemService;
         _settingsService = settingsService;
@@ -90,6 +92,7 @@ public partial class MainViewModel : ObservableObject
         _projectService = projectService;
         _fileSelectionService = fileSelectionService;
         _pinService = pinService;
+        _filterCategoryService = filterCategoryService;
 
         _ = InitializeAsync();
     }
@@ -99,56 +102,15 @@ public partial class MainViewModel : ObservableObject
         Settings = await _settingsService.LoadSettingsAsync();
         MaxCharsLimit = Settings.MaxCharsLimit;
 
-        // Load predefined categorized filters
-        var categories = GitIgnoreCategories.GetAllCategories();
-        foreach (var category in categories)
+        // Load filter categories using service
+        await _filterCategoryService.LoadFilterCategoriesAsync(Settings, OnFilterActiveChangedAsync);
+        
+        // Synchronize FilterCategories observable collection with service
+        FilterCategories.Clear();
+        foreach (var category in _filterCategoryService.FilterCategories)
         {
-            var categoryVm = new FilterCategoryViewModel
-            {
-                CategoryName = category
-            };
-
-            var filters = GitIgnoreCategories.GetFiltersForCategory(category);
-            foreach (var filter in filters)
-            {
-                var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
-                var filterVm = new FilterViewModel(filter, isActive, isReadOnly: true);
-                filterVm.PropertyChanged += async (s, e) =>
-                {
-                    if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
-                    {
-                        Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
-                        await ApplyFiltersAsync();
-                    }
-                };
-                categoryVm.Filters.Add(filterVm);
-            }
-
-            FilterCategories.Add(categoryVm);
+            FilterCategories.Add(category);
         }
-
-        // Load custom filters
-        var customCategory = new FilterCategoryViewModel
-        {
-            CategoryName = "Custom"
-        };
-
-        foreach (var filter in Settings.CustomIgnoreFilters)
-        {
-            var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
-            var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
-            filterVm.PropertyChanged += async (s, e) =>
-            {
-                if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
-                {
-                    Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
-                    await ApplyFiltersAsync();
-                }
-            };
-            customCategory.Filters.Add(filterVm);
-        }
-
-        FilterCategories.Add(customCategory);
 
         // Add "None" option for global prompts
         GlobalPrompts.Add(new GlobalPrompt
@@ -197,6 +159,12 @@ public partial class MainViewModel : ObservableObject
                 }
             }
         }
+    }
+
+    private async Task OnFilterActiveChangedAsync(string filterName, bool isActive)
+    {
+        _filterCategoryService.UpdateFilterActiveState(filterName, isActive, Settings);
+        await ApplyFiltersAsync();
     }
 
     [RelayCommand]
