@@ -11,7 +11,7 @@ public static class DefaultFilters
         {
             new IgnoreFilter
             {
-                Name = ".NET Build",
+                Name = "Node",
                 Patterns = new List<string>
                 {
                     "bin/",
