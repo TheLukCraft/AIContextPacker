@@ -81,7 +81,7 @@
                                Foreground="{DynamicResource TextBrush}"
                                LineHeight="24"
                                Margin="0,0,0,20">
-                        I turn complex challenges into intuitive software that drives your business. For two years, I have been passionately transforming complex business challenges into simple and effective software solutions. I specialize in custom web applications, from strategy and prototype through development to deployment and support.
+                        I turn complex challenges into intuitive software that drives your business. I specialize in custom web applications, from strategy and prototype through development to deployment and support. My passion is transforming complex business challenges into simple and effective software solutions.
                     </TextBlock>
                 </StackPanel>
             </Border>

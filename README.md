@@ -253,7 +253,7 @@ For development setup and coding standards, see [Docs/DeveloperGuide.md](Docs/De
 
 ## 🐛 Known Issues
 
-All major bugs have been resolved in version 1.0.1. If you encounter any issues, please [open an issue](../../issues).
+All major bugs have been resolved in version 1.1.0. If you encounter any issues, please [open an issue](../../issues).
 
 ## ⚡ Version History
 
