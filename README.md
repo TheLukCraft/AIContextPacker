@@ -27,9 +27,26 @@
 
 ### 🔍 Advanced Filtering System
 **3-Stage Filter Pipeline**:
-1. **Whitelist**: Only show allowed file extensions (13 defaults: .cs, .js, .ts, .py, .html, .css, .json, .md, .xml, .txt, .xaml, .tsx, .jsx)
-2. **Blacklist**: 8 predefined filter sets (.NET, Node.js, Python, Angular, React, Vue, Java, C++) with gitignore-style patterns
+
+1. **Whitelist - File Extensions**: Only show allowed file types
+   - 14 default extensions: `.cs`, `.html`, `.css`, `.js`, `.ts`, `.json`, `.md`, `.java`, `.py`, `.xml`, `.txt`, `.xaml`, `.tsx`, `.jsx`
+   - Fully customizable in Settings
+
+2. **Blacklist - Ignore Filters**: 66 predefined filters across 8 categories
+   - **Backend** (10): .NET, Node.js, Python, Java, Go, Laravel, Rails, Ruby, Rust, Scala
+   - **Frontend** (10): Angular, Next.js, Sass, Jekyll, GitHub Pages, GitBook, ExtJS, WordPress, Drupal, Joomla
+   - **Mobile** (9): Android, Kotlin, Swift, Objective-C, Flutter, Dart, Xcode, Appcelerator Titanium, Gradle
+   - **DevOps/CI** (9): Chef, Jenkins, Terraform, Packer, Maven, CMake, Autotools, SCons, Composer
+   - **Operating Systems** (4): Windows, Linux, Arch Linux, Nix
+   - **IDEs/Editors** (9): JetBrains, Visual Studio, VS Code, Eclipse, Vim, Emacs, Sublime Text, Notepad++, Kate
+   - **Game Development** (9): Unity, Unreal Engine, Godot, Flax Engine, Adventure Game Studio, Haxe, C++, Lua, Processing
+   - **Data Science/ML** (6): R, Julia, MATLAB, Fortran, CUDA, TeX
+   - Each filter uses gitignore-style patterns from official GitHub templates
+   - Create custom filters in Settings
+
 3. **Local .gitignore**: Automatically detected and optionally applied
+   - Respects your project's existing ignore rules
+   - Can be toggled on/off per project
 
 ### 💾 State Persistence
 - **Session Restore**: Automatically saves and restores your workspace

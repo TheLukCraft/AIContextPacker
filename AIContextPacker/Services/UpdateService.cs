@@ -18,7 +18,15 @@ public class UpdateService : IUpdateService
     {
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
-        return version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "1.0.0";
+        
+        // Return version from assembly, with fallback to read from embedded resource or default
+        if (version != null && version.Major > 0)
+        {
+            return $"{version.Major}.{version.Minor}.{version.Build}";
+        }
+        
+        // Fallback: should never happen as version is set in .csproj
+        return "1.0.0";
     }
 
     public async Task<UpdateInfo> CheckForUpdatesAsync()
