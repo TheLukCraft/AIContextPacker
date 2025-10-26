@@ -52,7 +52,8 @@
                        HorizontalAlignment="Center"
                        Margin="0,0,0,10"/>
             
-            <TextBlock Text="Version 1.0.0" 
+            <TextBlock x:Name="VersionText"
+                       Text="Version 1.0.1" 
                        FontSize="14" 
                        Foreground="{DynamicResource SecondaryTextBrush}"
                        HorizontalAlignment="Center"

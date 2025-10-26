@@ -227,11 +227,11 @@ For testing guidelines, see [Docs/TestingGuide.md](Docs/TestingGuide.md).
 
 ## 🐛 Known Issues
 
-All major bugs have been resolved in version 1.0.0. If you encounter any issues, please [open an issue](../../issues).
+All major bugs have been resolved in version 1.0.1. If you encounter any issues, please [open an issue](../../issues).
 
 ## ⚡ Version History
 
-### Version 1.0.0 (October 26, 2025)
+### Version 1.0.1 (October 26, 2025)
 - Initial release
 - Complete UI/UX implementation
 - Full theme system (Light/Dark/System)

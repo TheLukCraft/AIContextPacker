@@ -1,10 +1,12 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using AIContextPacker.Controls;
 using AIContextPacker.Helpers;
 using AIContextPacker.Models;
+using AIContextPacker.Services.Interfaces;
 using AIContextPacker.ViewModels;
 using AIContextPacker.Views;
 
@@ -13,12 +15,14 @@ namespace AIContextPacker;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
+    private readonly IUpdateService _updateService;
     private bool _isClosing = false;
 
-    public MainWindow(MainViewModel viewModel)
+    public MainWindow(MainViewModel viewModel, IUpdateService updateService)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _updateService = updateService;
         DataContext = _viewModel;
         
         // Subscribe to toast notifications
@@ -27,10 +31,11 @@ public partial class MainWindow : Window
         // Save state when closing - must handle async properly
         Closing += OnWindowClosing;
         
-        // Apply saved theme after window is loaded
-        Loaded += (s, e) =>
+        // Apply saved theme and check for updates after window is loaded
+        Loaded += async (s, e) =>
         {
             App.ApplyTheme(_viewModel.Settings.Theme);
+            await CheckForUpdatesAsync();
         };
     }
 
@@ -155,6 +160,45 @@ public partial class MainWindow : Window
         var supportWindow = new SupportWindow();
         supportWindow.Owner = this;
         supportWindow.ShowDialog();
+    }
+
+    private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        await CheckForUpdatesAsync(true);
+    }
+
+    private async Task CheckForUpdatesAsync(bool showNoUpdateMessage = false)
+    {
+        try
+        {
+            var updateInfo = await _updateService.CheckForUpdatesAsync();
+
+            if (updateInfo.IsUpdateAvailable)
+            {
+                var updateWindow = new UpdateNotificationWindow(updateInfo);
+                updateWindow.Owner = this;
+                updateWindow.ShowDialog();
+            }
+            else if (showNoUpdateMessage)
+            {
+                MessageBox.Show(
+                    $"You are running the latest version ({updateInfo.CurrentVersion}).",
+                    "No Updates Available",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+        catch
+        {
+            if (showNoUpdateMessage)
+            {
+                MessageBox.Show(
+                    "Could not check for updates. Please check your internet connection.",
+                    "Update Check Failed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
     }
 
     private void PreviewPart_Click(object sender, RoutedEventArgs e)

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
 
 namespace AIContextPacker.Views;
@@ -8,6 +9,15 @@ public partial class AboutWindow : Window
     public AboutWindow()
     {
         InitializeComponent();
+        LoadVersion();
+    }
+
+    private void LoadVersion()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version;
+        var versionString = version != null ? $"{version.Major}.{version.Minor}.{version.Build}" : "1.0.0";
+        VersionText.Text = $"Version {versionString}";
     }
 
     private void OpenWebsite_Click(object sender, RoutedEventArgs e)

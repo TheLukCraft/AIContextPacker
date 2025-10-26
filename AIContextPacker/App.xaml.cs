@@ -33,6 +33,7 @@ public partial class App : Application
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<INotificationService, NotificationService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<IUpdateService, UpdateService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

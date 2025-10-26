@@ -207,6 +207,8 @@
                 <MenuItem Header="Help">
                     <MenuItem Header="Tutorial"
                             Click="Tutorial_Click"/>
+                    <MenuItem Header="Check for Updates"
+                            Click="CheckForUpdates_Click"/>
                     <MenuItem Header="About"
                             Click="About_Click"/>
                 </MenuItem>

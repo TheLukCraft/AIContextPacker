@@ -39,10 +39,11 @@ AIContextPacker/
 2. **ISettingsService**: Persistent storage of app settings and session state
 3. **INotificationService**: User notifications (errors, success messages)
 4. **IClipboardService**: Clipboard operations abstraction
+5. **IUpdateService**: GitHub release API integration for update notifications
 
 #### Specialized Services:
-5. **FilterService**: 3-stage filtering logic (Whitelist → Blacklist → .gitignore)
-6. **PartGeneratorService**: Complex algorithm for splitting files into parts
+6. **FilterService**: 3-stage filtering logic (Whitelist → Blacklist → .gitignore)
+7. **PartGeneratorService**: Complex algorithm for splitting files into parts
 
 **Rationale:** Each service has a single, well-defined responsibility. Interfaces enable testing and future extensibility.
 
@@ -304,14 +305,24 @@ AIContextPacker/
 
 **Additional Windows:**
 - TutorialWindow: 7-step guide for new users
-- AboutWindow: Developer information and social links
+- AboutWindow: Developer information, social links, and version display
 - SupportWindow: Compelling monetization without being pushy
 - SettingsWindow: Comprehensive preferences management
 - FilterEditorWindow: Custom filter creation
 - PromptEditorWindow: Custom prompt management
 - PreviewWindow: Read-only part content view
+- UpdateNotificationWindow: GitHub release notifications with theme-adaptive colors
 
-**Rationale:** Clean architecture enables future enhancements without major refactoring. Monetization built-in early promotes sustainability.
+**Update System:**
+- Automatic check on application startup (non-blocking)
+- Manual check via Help → Check for Updates
+- GitHub API integration for release detection
+- Semantic version comparison (1.0.0 format)
+- Theme-adaptive notification window (green accent)
+- Direct link to releases page
+- Graceful fallback if check fails
+
+**Rationale:** Clean architecture enables future enhancements without major refactoring. Monetization built-in early promotes sustainability. Update notifications keep users on latest version with security fixes and features.
 
 ## Code Quality Standards
 
@@ -383,6 +394,6 @@ AIContextPacker/
 ---
 
 **Status:** ✅ Core architecture complete and production-ready  
-**Version:** 1.0.0  
-**Phase:** Bug-fixing and polish completed  
+**Version:** 1.0.1  
+**Phase:** Update notification system implemented  
 **Next:** Icon creation, potential feature additions based on user feedback
