@@ -43,9 +43,6 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        var mainViewModel = _serviceProvider?.GetService<MainViewModel>();
-        mainViewModel?.SaveStateAsync().Wait();
-
         _serviceProvider?.Dispose();
         base.OnExit(e);
     }
