@@ -13,6 +13,7 @@ namespace AIContextPacker;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
+    private bool _isClosing = false;
 
     public MainWindow(MainViewModel viewModel)
     {
@@ -23,17 +24,31 @@ public partial class MainWindow : Window
         // Subscribe to toast notifications
         _viewModel.ToastRequested += ShowToast;
         
-        // Save state when closing
-        Closing += async (s, e) =>
-        {
-            await _viewModel.SaveStateAsync();
-        };
+        // Save state when closing - must handle async properly
+        Closing += OnWindowClosing;
         
         // Apply saved theme after window is loaded
         Loaded += (s, e) =>
         {
             App.ApplyTheme(_viewModel.Settings.Theme);
         };
+    }
+
+    private async void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (!_isClosing)
+        {
+            e.Cancel = true;
+            _isClosing = true;
+            
+            await _viewModel.SaveStateAsync();
+            
+            // Unsubscribe to prevent memory leaks
+            _viewModel.ToastRequested -= ShowToast;
+            Closing -= OnWindowClosing;
+            
+            Application.Current.Shutdown();
+        }
     }
 
     private async void SelectProject_Click(object sender, RoutedEventArgs e)
@@ -133,6 +148,13 @@ public partial class MainWindow : Window
         var aboutWindow = new AboutWindow();
         aboutWindow.Owner = this;
         aboutWindow.ShowDialog();
+    }
+
+    private void SupportMe_Click(object sender, RoutedEventArgs e)
+    {
+        var supportWindow = new SupportWindow();
+        supportWindow.Owner = this;
+        supportWindow.ShowDialog();
     }
 
     private void PreviewPart_Click(object sender, RoutedEventArgs e)

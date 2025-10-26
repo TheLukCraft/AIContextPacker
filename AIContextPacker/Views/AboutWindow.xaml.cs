@@ -30,6 +30,11 @@ public partial class AboutWindow : Window
         OpenUrl("https://www.tiktok.com/@capalapl");
     }
 
+    private void OpenBuyMeCoffee_Click(object sender, RoutedEventArgs e)
+    {
+        OpenUrl("https://buymeacoffee.com/thelukcraft");
+    }
+
     private void OpenUrl(string url)
     {
         try
