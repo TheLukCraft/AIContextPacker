@@ -137,6 +137,74 @@
                 </Button>
             </StackPanel>
             
+            <!-- Support Section -->
+            <Border Background="#1AFF6B35"
+                    BorderBrush="#FFFF6B35"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,30,0,0">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,15">
+                        <TextBlock Text="❤️ " 
+                                   FontSize="24" 
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="Support Me" 
+                                   FontSize="20" 
+                                   FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               TextAlignment="Center"
+                               LineHeight="24"
+                               Margin="0,0,0,15">
+                        If this tool saves you time and makes your work easier, 
+                        consider buying me a slice of pizza! 🍕
+                    </TextBlock>
+                    
+                    <Button Click="OpenBuyMeCoffee_Click"
+                            HorizontalAlignment="Center"
+                            Padding="20,10"
+                            Margin="0,0,0,0"
+                            Cursor="Hand"
+                            FontWeight="Bold">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#FFFF6B35"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FFFF8555"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🍕 " FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="Buy Me a Slice of Pizza" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+            
             <Border BorderBrush="{DynamicResource BorderBrush}" 
                     BorderThickness="0,1,0,0" 
                     Padding="0,20,0,0"

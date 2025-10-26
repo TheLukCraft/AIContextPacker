@@ -187,6 +187,11 @@
                               Background="{DynamicResource SurfaceBrush}"
                               Foreground="{DynamicResource TextBrush}"
                               VerticalAlignment="Center">
+                        <ComboBox.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Style>
+                        </ComboBox.Resources>
                         <ComboBox.ItemContainerStyle>
                             <Style TargetType="ComboBoxItem">
                                 <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
@@ -205,6 +210,40 @@
                             </Style>
                         </ComboBox.ItemContainerStyle>
                     </ComboBox>
+                    
+                    <!-- Support Button -->
+                    <Button Content="❤️ Support Me" 
+                            Click="SupportMe_Click"
+                            Margin="20,0,0,0"
+                            Padding="15,8"
+                            FontWeight="Medium"
+                            Cursor="Hand"
+                            VerticalAlignment="Center">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#FF6351B5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FF7C6BC5"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
                 
                 <!-- Loading indicator -->

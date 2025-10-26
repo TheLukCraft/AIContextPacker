@@ -150,6 +150,13 @@ public partial class MainWindow : Window
         aboutWindow.ShowDialog();
     }
 
+    private void SupportMe_Click(object sender, RoutedEventArgs e)
+    {
+        var supportWindow = new SupportWindow();
+        supportWindow.Owner = this;
+        supportWindow.ShowDialog();
+    }
+
     private void PreviewPart_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is GeneratedPart part)

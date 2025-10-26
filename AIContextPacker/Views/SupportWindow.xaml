@@ -1,0 +1,251 @@
+<Window x:Class="AIContextPacker.Views.SupportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Support AI Context Packer" Height="700" Width="650"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="SupportButton">
+            <Setter Property="Background" Value="#FFFF6B35"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="30,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFFF8555"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style TargetType="Button" x:Key="CloseButton">
+            <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40">
+        <StackPanel MaxWidth="550">
+            <!-- Header with Heart -->
+            <Viewbox Width="80" Height="80" Margin="0,0,0,20">
+                <TextBlock Text="❤️" FontSize="80"/>
+            </Viewbox>
+            
+            <TextBlock Text="Support AI Context Packer" 
+                       FontSize="32" 
+                       FontWeight="Bold" 
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Help keep this project alive!" 
+                       FontSize="18" 
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Margin="0,0,0,30"/>
+            
+            <!-- Value Proposition -->
+            <Border Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="25"
+                    Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock Text="🎯 What You Get" 
+                               FontSize="18" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,15"/>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="⏱️" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextBrush}">
+                            <Run Text="Save hours" FontWeight="Bold"/>
+                            <Run Text=" of manual context preparation for AI assistants"/>
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="🚀" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextBrush}">
+                            <Run Text="Boost productivity" FontWeight="Bold"/>
+                            <Run Text=" by 10x with instant project context"/>
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="🎨" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextBrush}">
+                            <Run Text="Free &amp; open-source" FontWeight="Bold"/>
+                            <Run Text=" - built with love for developers"/>
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✨" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextBrush}">
+                            <Run Text="Regular updates" FontWeight="Bold"/>
+                            <Run Text=" with new features and improvements"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Impact Message -->
+            <Border Background="#1AFF6B35"
+                    BorderBrush="#FFFF6B35"
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="25"
+                    Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock Text="💪 Your Support Matters" 
+                               FontSize="18" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,10"/>
+                    
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               LineHeight="24"
+                               Margin="0,0,0,10">
+                        Every slice of pizza you buy helps me dedicate more time to:
+                    </TextBlock>
+                    
+                    <TextBlock Text="• Adding new features you request" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="15,0,0,5"/>
+                    <TextBlock Text="• Fixing bugs and improving performance" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="15,0,0,5"/>
+                    <TextBlock Text="• Creating detailed tutorials and documentation" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="15,0,0,5"/>
+                    <TextBlock Text="• Maintaining compatibility with new technologies" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="15,0,0,5"/>
+                    
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               LineHeight="24"
+                               Margin="0,15,0,0"
+                               FontStyle="Italic">
+                        If this tool saved you time and made your work easier, consider buying me a slice of pizza! 🍕
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+            
+            <!-- Call to Action -->
+            <Button Content="🍕 Buy Me a Slice of Pizza" 
+                    Style="{StaticResource SupportButton}"
+                    Click="BuyMeCoffee_Click"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,20"/>
+            
+            <TextBlock Text="Takes less than a minute" 
+                       FontSize="12" 
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Margin="0,0,0,30"/>
+            
+            <!-- Alternative Support -->
+            <Border Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock Text="🌟 Other Ways to Support" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,10"/>
+                    
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,5">
+                        • Star the project on GitHub
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,5">
+                        • Share it with fellow developers
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}"
+                               Margin="0,0,0,5">
+                        • Report bugs and suggest features
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" 
+                               Foreground="{DynamicResource TextBrush}">
+                        • Leave a review or testimonial
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+            
+            <!-- Thank You -->
+            <TextBlock Text="Thank you for using AI Context Packer! ❤️" 
+                       FontSize="16" 
+                       FontWeight="Medium"
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource TextBrush}"
+                       Margin="0,0,0,15"/>
+            
+            <TextBlock Text="- TheLukCraft" 
+                       FontSize="14" 
+                       FontStyle="Italic"
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource SecondaryTextBrush}"
+                       Margin="0,0,0,25"/>
+            
+            <!-- Close Button -->
+            <Button Content="Close" 
+                    Style="{StaticResource CloseButton}"
+                    Click="Close_Click"
+                    HorizontalAlignment="Center"
+                    MinWidth="120"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>
