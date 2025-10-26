@@ -38,7 +38,11 @@ public partial class FileTreeNode : ObservableObject
         {
             foreach (var child in Children)
             {
-                child.IsSelected = value;
+                // Don't change selection state of pinned or invisible children
+                if (!child.IsPinned && child.IsVisible)
+                {
+                    child.IsSelected = value;
+                }
             }
         }
     }

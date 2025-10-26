@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AIContextPacker.Models;
 using AIContextPacker.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -81,17 +82,47 @@ public class FileSelectionService : IFileSelectionService
 
     private void SelectAllRecursive(FileTreeNode node, bool select)
     {
-        // Only apply selection to files, not directories
-        // This prevents automatic propagation via OnIsSelectedChanged
-        if (!node.IsDirectory && node.IsVisible && !node.IsPinned)
+        // Skip invisible or pinned nodes
+        if (!node.IsVisible || node.IsPinned)
         {
-            node.IsSelected = select;
+            return;
         }
 
-        foreach (var child in node.Children)
+        // For directories, recursively process children first, then update directory state
+        if (node.IsDirectory)
         {
-            SelectAllRecursive(child, select);
+            foreach (var child in node.Children)
+            {
+                SelectAllRecursive(child, select);
+            }
+            
+            // Update directory checkbox based on children state
+            // This ensures the checkbox reflects the actual state of children
+            UpdateDirectorySelectionState(node);
         }
+        else
+        {
+            // For files, directly set the selection state
+            node.IsSelected = select;
+        }
+    }
+
+    private void UpdateDirectorySelectionState(FileTreeNode directory)
+    {
+        if (!directory.IsDirectory || directory.Children.Count == 0)
+        {
+            return;
+        }
+
+        var visibleChildren = directory.Children.Where(c => c.IsVisible && !c.IsPinned).ToList();
+        if (visibleChildren.Count == 0)
+        {
+            directory.IsSelected = false;
+            return;
+        }
+
+        var selectedCount = visibleChildren.Count(c => c.IsSelected);
+        directory.IsSelected = selectedCount == visibleChildren.Count;
     }
 
     private IEnumerable<string> GetSelectedFilePathsRecursive(FileTreeNode node)

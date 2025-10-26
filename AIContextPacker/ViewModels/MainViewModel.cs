@@ -150,6 +150,9 @@ public partial class MainViewModel : ObservableObject
         SelectedGlobalPromptId = string.IsNullOrEmpty(sessionState.SelectedGlobalPrompt) 
             ? null 
             : sessionState.SelectedGlobalPrompt;
+        
+        // Notify UI that pinned files may have been restored
+        OnPropertyChanged(nameof(PinnedFiles));
     }
 
     private async Task OnFilterActiveChangedAsync(string filterName, bool isActive)
@@ -225,6 +228,7 @@ public partial class MainViewModel : ObservableObject
     private void TogglePinFile(FileTreeNode node)
     {
         _pinService.TogglePin(node);
+        OnPropertyChanged(nameof(PinnedFiles));
         MarkAsChanged();
     }
 
