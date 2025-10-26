@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using AIContextPacker.Exceptions;
 using AIContextPacker.Helpers;
 using AIContextPacker.Models;
 using AIContextPacker.Services;
@@ -20,14 +21,19 @@ public partial class MainViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly INotificationService _notificationService;
     private readonly IClipboardService _clipboardService;
+    private readonly IProjectService _projectService;
+    private readonly IFileSelectionService _fileSelectionService;
+    private readonly IPinService _pinService;
+    private readonly IFilterCategoryService _filterCategoryService;
+    private readonly ISessionStateService _sessionStateService;
 
     public event Action<string>? ToastRequested;
 
     [ObservableProperty]
     private FileTreeNode? rootNode;
 
-    [ObservableProperty]
-    private ObservableCollection<FileTreeNode> pinnedFiles = new();
+    // Delegate to PinService for pinned files management
+    public IReadOnlyList<FileTreeNode> PinnedFiles => _pinService.PinnedFiles;
 
     [ObservableProperty]
     private ObservableCollection<GeneratedPart> generatedParts = new();
@@ -74,12 +80,22 @@ public partial class MainViewModel : ObservableObject
         IFileSystemService fileSystemService,
         ISettingsService settingsService,
         INotificationService notificationService,
-        IClipboardService clipboardService)
+        IClipboardService clipboardService,
+        IProjectService projectService,
+        IFileSelectionService fileSelectionService,
+        IPinService pinService,
+        IFilterCategoryService filterCategoryService,
+        ISessionStateService sessionStateService)
     {
         _fileSystemService = fileSystemService;
         _settingsService = settingsService;
         _notificationService = notificationService;
         _clipboardService = clipboardService;
+        _projectService = projectService;
+        _fileSelectionService = fileSelectionService;
+        _pinService = pinService;
+        _filterCategoryService = filterCategoryService;
+        _sessionStateService = sessionStateService;
 
         _ = InitializeAsync();
     }
@@ -89,56 +105,15 @@ public partial class MainViewModel : ObservableObject
         Settings = await _settingsService.LoadSettingsAsync();
         MaxCharsLimit = Settings.MaxCharsLimit;
 
-        // Load predefined categorized filters
-        var categories = GitIgnoreCategories.GetAllCategories();
-        foreach (var category in categories)
+        // Load filter categories using service
+        await _filterCategoryService.LoadFilterCategoriesAsync(Settings, OnFilterActiveChangedAsync);
+        
+        // Synchronize FilterCategories observable collection with service
+        FilterCategories.Clear();
+        foreach (var category in _filterCategoryService.FilterCategories)
         {
-            var categoryVm = new FilterCategoryViewModel
-            {
-                CategoryName = category
-            };
-
-            var filters = GitIgnoreCategories.GetFiltersForCategory(category);
-            foreach (var filter in filters)
-            {
-                var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
-                var filterVm = new FilterViewModel(filter, isActive, isReadOnly: true);
-                filterVm.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
-                    {
-                        Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
-                        ApplyFilters();
-                    }
-                };
-                categoryVm.Filters.Add(filterVm);
-            }
-
-            FilterCategories.Add(categoryVm);
+            FilterCategories.Add(category);
         }
-
-        // Load custom filters
-        var customCategory = new FilterCategoryViewModel
-        {
-            CategoryName = "Custom"
-        };
-
-        foreach (var filter in Settings.CustomIgnoreFilters)
-        {
-            var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
-            var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
-            filterVm.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
-                {
-                    Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
-                    ApplyFilters();
-                }
-            };
-            customCategory.Filters.Add(filterVm);
-        }
-
-        FilterCategories.Add(customCategory);
 
         // Add "None" option for global prompts
         GlobalPrompts.Add(new GlobalPrompt
@@ -164,24 +139,26 @@ public partial class MainViewModel : ObservableObject
             }
         }
 
-        var sessionState = await _settingsService.LoadSessionStateAsync();
+        var sessionState = await _sessionStateService.RestoreSessionStateAsync(
+            LoadProjectAsync,
+            TogglePinFile,
+            FindNodeByPath);
+        
         UseDetectedGitignore = sessionState.UseDetectedGitignore;
+        
+        // Restore selected global prompt (defaults to null/"(None)" if not set)
+        SelectedGlobalPromptId = string.IsNullOrEmpty(sessionState.SelectedGlobalPrompt) 
+            ? null 
+            : sessionState.SelectedGlobalPrompt;
+        
+        // Notify UI that pinned files may have been restored
+        OnPropertyChanged(nameof(PinnedFiles));
+    }
 
-        if (!string.IsNullOrEmpty(sessionState.LastProjectPath) && 
-            Directory.Exists(sessionState.LastProjectPath))
-        {
-            await LoadProjectAsync(sessionState.LastProjectPath);
-            
-            // Restore pinned files
-            foreach (var pinnedPath in sessionState.PinnedFiles)
-            {
-                var node = FindNodeByPath(RootNode, pinnedPath);
-                if (node != null)
-                {
-                    TogglePinFile(node);
-                }
-            }
-        }
+    private async Task OnFilterActiveChangedAsync(string filterName, bool isActive)
+    {
+        _filterCategoryService.UpdateFilterActiveState(filterName, isActive, Settings);
+        await ApplyFiltersAsync();
     }
 
     [RelayCommand]
@@ -190,23 +167,14 @@ public partial class MainViewModel : ObservableObject
         try
         {
             IsLoadingProject = true;
-            LoadingStatus = "Validating folder...";
 
-            if (string.IsNullOrWhiteSpace(folderPath))
+            var progress = new ProgressReporter((status, percent) =>
             {
-                _notificationService.ShowWarning("Please select a valid folder.");
-                return;
-            }
+                LoadingStatus = status;
+            });
 
-            if (!_fileSystemService.DirectoryExists(folderPath))
-            {
-                _notificationService.ShowError($"Directory does not exist: {folderPath}");
-                return;
-            }
-
-            LoadingStatus = "Loading project structure...";
-
-            var structure = await _fileSystemService.LoadProjectAsync(folderPath);
+            var structure = await _projectService.LoadProjectAsync(folderPath, progress);
+            
             CurrentProjectPath = folderPath;
             RootNode = structure.RootNode;
             HasLocalGitignore = structure.HasLocalGitignore;
@@ -224,7 +192,7 @@ public partial class MainViewModel : ObservableObject
 
             LoadingStatus = "Applying filters...";
 
-            ApplyFilters();
+            await ApplyFiltersAsync();
             await _settingsService.AddRecentProjectAsync(folderPath);
             
             // Update recent projects list
@@ -241,9 +209,13 @@ public partial class MainViewModel : ObservableObject
             MarkAsChanged();
             LoadingStatus = "Project loaded successfully!";
         }
+        catch (ProjectLoadException ex)
+        {
+            _notificationService.ShowError($"Failed to load project:\n{ex.Message}");
+        }
         catch (Exception ex)
         {
-            _notificationService.ShowError($"Failed to load project: {ex.Message}");
+            _notificationService.ShowError($"An unexpected error occurred:\n{ex.Message}");
         }
         finally
         {
@@ -255,21 +227,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void TogglePinFile(FileTreeNode node)
     {
-        if (node.IsDirectory)
-            return;
-
-        node.IsPinned = !node.IsPinned;
-
-        if (node.IsPinned)
-        {
-            PinnedFiles.Add(node);
-            node.IsSelected = false;
-        }
-        else
-        {
-            PinnedFiles.Remove(node);
-        }
-
+        _pinService.TogglePin(node);
+        OnPropertyChanged(nameof(PinnedFiles));
         MarkAsChanged();
     }
 
@@ -278,7 +237,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (RootNode != null)
         {
-            SelectAllRecursive(RootNode, true);
+            _fileSelectionService.SelectAll(RootNode);
         }
         MarkAsChanged();
     }
@@ -288,22 +247,9 @@ public partial class MainViewModel : ObservableObject
     {
         if (RootNode != null)
         {
-            SelectAllRecursive(RootNode, false);
+            _fileSelectionService.DeselectAll(RootNode);
         }
         MarkAsChanged();
-    }
-
-    private void SelectAllRecursive(FileTreeNode node, bool select)
-    {
-        if (node.IsVisible && !node.IsPinned)
-        {
-            node.IsSelected = select;
-        }
-
-        foreach (var child in node.Children)
-        {
-            SelectAllRecursive(child, select);
-        }
     }
 
     [RelayCommand]
@@ -315,8 +261,8 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var selectedFiles = GetSelectedFilePaths(RootNode).ToList();
-        var pinnedFilePaths = PinnedFiles.Select(f => f.FullPath).ToList();
+        var selectedFiles = _fileSelectionService.GetSelectedFilePaths(RootNode).ToList();
+        var pinnedFilePaths = _pinService.GetPinnedFilePaths().ToList();
 
         if (!selectedFiles.Any() && !pinnedFilePaths.Any())
         {
@@ -368,8 +314,8 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        var selectedFiles = GetSelectedFilePaths(RootNode).ToList();
-        var pinnedFilePaths = PinnedFiles.Select(f => f.FullPath).ToList();
+        var selectedFiles = _fileSelectionService.GetSelectedFilePaths(RootNode).ToList();
+        var pinnedFilePaths = _pinService.GetPinnedFilePaths().ToList();
 
         var generator = new PartGeneratorService(_fileSystemService, _notificationService);
         var structure = generator.GenerateStructure(RootNode, selectedFiles, pinnedFilePaths);
@@ -378,95 +324,100 @@ public partial class MainViewModel : ObservableObject
         ToastRequested?.Invoke("Project structure copied to clipboard!");
     }
 
-    public void ApplyFilters()
+    public async Task ApplyFiltersAsync()
     {
         if (RootNode == null || string.IsNullOrEmpty(CurrentProjectPath))
             return;
 
-        // Aggregate all active filters from all categories
-        var activeFilters = FilterCategories
-            .SelectMany(cat => cat.Filters)
-            .Where(f => f.IsActive)
-            .Select(f => f.Filter)
-            .ToList();
-        
-        var gitignorePatterns = UseDetectedGitignore ? _localGitignorePatterns : new List<string>();
-
-        System.Diagnostics.Debug.WriteLine($"=== ApplyFilters ===");
-        System.Diagnostics.Debug.WriteLine($"Active filters count: {activeFilters.Count}");
-        System.Diagnostics.Debug.WriteLine($"Gitignore patterns count: {gitignorePatterns.Count}");
-        System.Diagnostics.Debug.WriteLine($"Base path: {CurrentProjectPath}");
-        
-        foreach (var filter in activeFilters)
+        try
         {
-            System.Diagnostics.Debug.WriteLine($"  Filter: {filter.Name} - Patterns: {string.Join(", ", filter.Patterns)}");
-        }
-        
-        foreach (var pattern in gitignorePatterns.Take(10))
-        {
-            System.Diagnostics.Debug.WriteLine($"  Gitignore: {pattern}");
-        }
-
-        var filterService = new FilterService(
-            Settings.AllowedExtensions,
-            activeFilters,
-            gitignorePatterns,
-            CurrentProjectPath);
-
-        ApplyFiltersRecursive(RootNode, filterService);
-        MarkAsChanged();
-    }
-
-    private void ApplyFiltersRecursive(FileTreeNode node, FilterService filterService)
-    {
-        if (!node.IsDirectory)
-        {
-            // For files, check if they should be included
-            var wasVisible = node.IsVisible;
-            node.IsVisible = filterService.ShouldIncludeFile(node.FullPath);
+            IsLoadingProject = true;
             
-            if (wasVisible != node.IsVisible)
+            var progress = new ProgressReporter((status, percent) =>
             {
-                System.Diagnostics.Debug.WriteLine($"File visibility changed: {node.Name} ({node.FullPath}) -> {node.IsVisible}");
-            }
-        }
-        else
-        {
-            // First check if the directory itself should be filtered out
-            var shouldShowDir = filterService.ShouldShowDirectory(node.FullPath);
-            
-            if (!shouldShowDir)
-            {
-                // Directory is filtered out - hide it and all children
-                node.IsVisible = false;
-                System.Diagnostics.Debug.WriteLine($"Directory filtered out: {node.Name} ({node.FullPath})");
-                return;
-            }
-            
-            // Directory is not filtered, process children
-            foreach (var child in node.Children)
-            {
-                ApplyFiltersRecursive(child, filterService);
-            }
+                LoadingStatus = status;
+            });
 
-            // Directory is visible if it has any visible children
-            node.IsVisible = node.Children.Any(c => c.IsVisible);
+            // Aggregate all active filters from all categories
+            var activeFilters = FilterCategories
+                .SelectMany(cat => cat.Filters)
+                .Where(f => f.IsActive)
+                .Select(f => f.Filter)
+                .ToList();
+            
+            var gitignorePatterns = UseDetectedGitignore ? _localGitignorePatterns : new List<string>();
+
+            var filterService = new FilterService(
+                Settings.AllowedExtensions,
+                activeFilters,
+                gitignorePatterns,
+                CurrentProjectPath);
+
+            await filterService.ApplyFiltersAsync(RootNode, progress);
+            MarkAsChanged();
+        }
+        finally
+        {
+            IsLoadingProject = false;
+            LoadingStatus = string.Empty;
         }
     }
 
-    private IEnumerable<string> GetSelectedFilePaths(FileTreeNode node)
+    public void RefreshFiltersAndPrompts()
     {
-        if (!node.IsDirectory && node.IsSelected && node.IsVisible)
+        // Refresh custom filters
+        var customCategory = FilterCategories.FirstOrDefault(c => c.CategoryName == "Custom");
+        if (customCategory != null)
         {
-            yield return node.FullPath;
+            // Remove filters that no longer exist
+            var filtersToRemove = customCategory.Filters
+                .Where(fvm => !Settings.CustomIgnoreFilters.Contains(fvm.Filter))
+                .ToList();
+            
+            foreach (var filter in filtersToRemove)
+            {
+                customCategory.Filters.Remove(filter);
+            }
+
+            // Update existing filters and add new ones
+            foreach (var filter in Settings.CustomIgnoreFilters)
+            {
+                var existingVm = customCategory.Filters.FirstOrDefault(fvm => fvm.Filter == filter);
+                if (existingVm != null)
+                {
+                    // Filter already exists, trigger property change notification by reassigning
+                    existingVm.Filter = filter;
+                }
+                else
+                {
+                    // New filter, add it
+                    var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
+                    var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
+                    filterVm.PropertyChanged += async (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
+                        {
+                            Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
+                            await ApplyFiltersAsync();
+                        }
+                    };
+                    customCategory.Filters.Add(filterVm);
+                }
+            }
         }
 
-        foreach (var child in node.Children)
+        // Refresh global prompts
+        GlobalPrompts.Clear();
+        GlobalPrompts.Add(new GlobalPrompt
         {
-            foreach (var path in GetSelectedFilePaths(child))
-            {
-                yield return path;
-            }
+            Id = null,
+            Name = "(None)",
+            Content = string.Empty
+        });
+
+        foreach (var prompt in Settings.GlobalPrompts)
+        {
+            GlobalPrompts.Add(prompt);
         }
     }
 
@@ -504,23 +455,19 @@ public partial class MainViewModel : ObservableObject
         MarkAsChanged();
     }
 
-    partial void OnUseDetectedGitignoreChanged(bool value)
+    async partial void OnUseDetectedGitignoreChanged(bool value)
     {
-        ApplyFilters();
+        await ApplyFiltersAsync();
     }
 
     public async Task SaveStateAsync()
     {
-        var sessionState = new SessionState
-        {
-            LastProjectPath = CurrentProjectPath,
-            PinnedFiles = PinnedFiles.Select(f => f.FullPath).ToList(),
-            SelectedFiles = RootNode != null ? GetSelectedFilePaths(RootNode).ToList() : new List<string>(),
-            UseDetectedGitignore = UseDetectedGitignore,
-            SelectedGlobalPrompt = SelectedGlobalPromptId ?? string.Empty
-        };
-
-        await _settingsService.SaveSessionStateAsync(sessionState);
+        await _sessionStateService.SaveSessionStateAsync(
+            CurrentProjectPath,
+            RootNode,
+            SelectedGlobalPromptId,
+            UseDetectedGitignore);
+        
         await _settingsService.SaveSettingsAsync(Settings);
     }
 }

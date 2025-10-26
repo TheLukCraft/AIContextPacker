@@ -14,9 +14,12 @@
 #### ✅ File Selection
 - [ ] Select individual files via checkbox
 - [ ] Select folder (all children should be selected)
-- [ ] Use "Select All" button
-- [ ] Use "Deselect All" button
+- [ ] Verify "Select All" button is positioned below "📁 Project Files:" header
+- [ ] Verify "Deselect All" button is positioned below "📁 Project Files:" header
+- [ ] Use "Select All" button → all visible files selected
+- [ ] Use "Deselect All" button → all files deselected
 - [ ] Verify selections persist when changing filters
+- [ ] Verify hierarchical selection (parent folder selects all children)
 
 #### ✅ Pinned Files
 - [ ] Pin a file using 📌 icon
@@ -105,11 +108,15 @@
 
 #### ✅ State Saving
 - [ ] Load project, select files, pin some
+- [ ] Select a global prompt from dropdown
+- [ ] Change MaxCharsLimit value
 - [ ] Close application
 - [ ] Reopen → verify project reloaded
 - [ ] Verify selections restored
 - [ ] Verify pinned files restored
 - [ ] Verify filter states restored
+- [ ] Verify global prompt selection restored (or "(None)" if not set)
+- [ ] Verify MaxCharsLimit value restored
 
 #### ✅ Recent Projects
 - [ ] Load Project A
@@ -138,6 +145,7 @@
 
 #### ✅ Responsiveness
 - [ ] Resize window → verify layout adapts
+- [ ] Try to resize below 850x760 → verify minimum size enforced
 - [ ] Load large project (1000+ files) → verify performance
 - [ ] Generate with many parts → verify UI remains responsive
 
@@ -145,6 +153,20 @@
 - [ ] Select folder without permission → verify error message
 - [ ] Load empty folder → verify graceful handling
 - [ ] Generate with no files selected → verify warning
+
+### Settings Window
+
+#### ✅ Settings Synchronization
+- [ ] Open Settings window
+- [ ] Change MaxCharsLimit value
+- [ ] Save settings
+- [ ] Verify MainWindow shows updated MaxCharsLimit
+- [ ] Change MaxCharsLimit in MainWindow
+- [ ] Open Settings → verify value matches
+- [ ] Add/edit/delete custom filter
+- [ ] Verify filter name updates immediately in MainWindow
+- [ ] Edit custom filter name
+- [ ] Verify new name appears in filter categories
 
 ### Edge Cases
 
@@ -224,6 +246,34 @@ When reporting bugs, include:
 - App Version: [version]
 **Logs**: [If available, from %AppData%/AIContextPacker/]
 ```
+
+## Recent Bug Fixes (Version 1.0.2)
+
+### Fixed Issues
+1. ✅ **Custom filter name not updating after edit**
+   - Problem: When editing a custom gitignore filter, the name wouldn't update in the UI
+   - Solution: Changed to reference-based comparison and added `OnFilterChanged` notification handler
+   - Impact: Filter names now update immediately in the UI after editing
+
+2. ✅ **Max char limit not syncing between Settings and Main window**
+   - Problem: Changing MaxCharsLimit in Settings window wouldn't update the value in Main window
+   - Solution: Added explicit synchronization after settings dialog closes
+   - Impact: Changes in Settings now immediately reflect in Main window
+
+3. ✅ **Global prompt not defaulting to "(None)" on startup**
+   - Problem: Global prompt dropdown would show empty/first item instead of "(None)"
+   - Solution: Restored `SelectedGlobalPromptId` from SessionState with null default
+   - Impact: Users now see "(None)" selected by default unless they previously chose a prompt
+
+4. ✅ **No minimum window size enforced**
+   - Problem: Window could be resized too small, making UI unusable
+   - Solution: Added `MinWidth="850"` and `MinHeight="760"` to MainWindow
+   - Impact: Window cannot be resized below usable dimensions
+
+5. ✅ **Selection buttons positioned above section header**
+   - Problem: "Select All" and "Deselect All" buttons were above "📁 Project Files:" header
+   - Solution: Moved buttons to appear below the header for better visual hierarchy
+   - Impact: More intuitive UI flow - users see the section title first, then controls
 
 ## Known Limitations
 

@@ -1,30 +1,44 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AIContextPacker.Models;
+using AIContextPacker.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace AIContextPacker.Services;
 
-public class FilterService
+/// <summary>
+/// Provides file and directory filtering based on patterns and rules.
+/// </summary>
+public class FilterService : IFilterService
 {
     private readonly List<string> _allowedExtensions;
     private readonly List<IgnoreFilter> _activeFilters;
     private readonly List<string> _gitignorePatterns;
     private readonly string _basePath;
+    private readonly ILogger<FilterService>? _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FilterService"/> class.
+    /// </summary>
     public FilterService(
         List<string> allowedExtensions,
         List<IgnoreFilter> activeFilters,
         List<string> gitignorePatterns,
-        string basePath)
+        string basePath,
+        ILogger<FilterService>? logger = null)
     {
         _allowedExtensions = allowedExtensions;
         _activeFilters = activeFilters;
         _gitignorePatterns = gitignorePatterns;
         _basePath = basePath;
+        _logger = logger;
     }
 
+    /// <inheritdoc/>
     public bool ShouldIncludeFile(string filePath)
     {
         var extension = Path.GetExtension(filePath).ToLowerInvariant();
@@ -44,6 +58,7 @@ public class FilterService
         return true;
     }
 
+    /// <inheritdoc/>
     public bool ShouldShowDirectory(string directoryPath)
     {
         // Check if directory should be shown based on filters and .gitignore
@@ -56,6 +71,7 @@ public class FilterService
         return true;
     }
 
+    /// <inheritdoc/>
     public bool ShouldShowInStructure(string path)
     {
         // For "Copy Structure", we show all files including those filtered by whitelist
@@ -146,9 +162,9 @@ public class FilterService
             if (Regex.IsMatch(cleanPath, regexPattern, RegexOptions.IgnoreCase))
                 return true;
         }
-        else if (cleanPattern.Contains("*") || cleanPattern.Contains("?"))
+        else if (cleanPattern.Contains("*") || cleanPattern.Contains("?") || cleanPattern.Contains("["))
         {
-            // Simple glob matching
+            // Simple glob matching (includes *, ?, and [] patterns)
             if (MatchesSimplePattern(cleanPath, cleanPattern))
                 return true;
                 
@@ -201,9 +217,44 @@ public class FilterService
 
     private bool MatchesSimplePattern(string text, string pattern)
     {
-        var regexPattern = "^" + Regex.Escape(pattern)
-            .Replace("\\*", "[^/]*")
-            .Replace("\\?", "[^/]") + "$";
+        // Convert glob pattern to regex
+        var regexPattern = "^";
+        
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            char c = pattern[i];
+            
+            if (c == '*')
+            {
+                regexPattern += "[^/]*";
+            }
+            else if (c == '?')
+            {
+                regexPattern += "[^/]";
+            }
+            else if (c == '[')
+            {
+                // Handle character class [abc] or [a-z]
+                int closeBracket = pattern.IndexOf(']', i);
+                if (closeBracket > i)
+                {
+                    // Extract the character class and add it as-is to regex
+                    regexPattern += pattern.Substring(i, closeBracket - i + 1);
+                    i = closeBracket; // Skip to closing bracket
+                }
+                else
+                {
+                    // No closing bracket, treat as literal
+                    regexPattern += Regex.Escape(c.ToString());
+                }
+            }
+            else
+            {
+                regexPattern += Regex.Escape(c.ToString());
+            }
+        }
+        
+        regexPattern += "$";
         
         return Regex.IsMatch(text, regexPattern, RegexOptions.IgnoreCase);
     }
@@ -218,4 +269,78 @@ public class FilterService
         }
         return fullPath.Replace(Path.DirectorySeparatorChar, '/');
     }
+
+    /// <inheritdoc/>
+    public async Task ApplyFiltersAsync(FileTreeNode rootNode, IProgressReporter? progress = null)
+    {
+        _logger?.LogInformation("Applying filters to file tree");
+        
+        var totalNodes = CountNodes(rootNode);
+        var processedNodes = 0;
+
+        await Task.Run(() =>
+        {
+            ApplyFiltersRecursive(rootNode, ref processedNodes, totalNodes, progress);
+        });
+
+        progress?.Clear();
+        _logger?.LogInformation("Filters applied to {TotalNodes} nodes", totalNodes);
+    }
+
+    private void ApplyFiltersRecursive(
+        FileTreeNode node, 
+        ref int processedNodes, 
+        int totalNodes, 
+        IProgressReporter? progress)
+    {
+        if (progress?.CancellationToken.IsCancellationRequested == true)
+            return;
+
+        processedNodes++;
+
+        if (processedNodes % 50 == 0 && totalNodes > 0)
+        {
+            var percent = (double)processedNodes / totalNodes * 100;
+            progress?.Report($"Filtering: {processedNodes}/{totalNodes} items...", percent);
+        }
+
+        if (!node.IsDirectory)
+        {
+            // For files, check if they should be included
+            node.IsVisible = ShouldIncludeFile(node.FullPath);
+        }
+        else
+        {
+            // First check if the directory itself should be filtered out
+            var shouldShowDir = ShouldShowDirectory(node.FullPath);
+            
+            if (!shouldShowDir)
+            {
+                // Directory is filtered out - hide it and all children
+                node.IsVisible = false;
+                _logger?.LogDebug("Directory filtered out: {Path}", node.FullPath);
+                return;
+            }
+            
+            // Directory is not filtered, process children
+            foreach (var child in node.Children)
+            {
+                ApplyFiltersRecursive(child, ref processedNodes, totalNodes, progress);
+            }
+
+            // Directory is visible if it has any visible children
+            node.IsVisible = node.Children.Any(c => c.IsVisible);
+        }
+    }
+
+    private int CountNodes(FileTreeNode node)
+    {
+        var count = 1;
+        foreach (var child in node.Children)
+        {
+            count += CountNodes(child);
+        }
+        return count;
+    }
 }
+

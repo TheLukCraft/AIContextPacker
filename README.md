@@ -118,6 +118,8 @@ dotnet run
 - **Dependency Injection**: Professional service architecture with Microsoft.Extensions.DependencyInjection
 - **Async/Await**: All I/O operations are non-blocking
 - **Newtonsoft.Json**: Reliable settings serialization
+- **Serilog**: Structured logging with rolling file sinks
+- **Testing**: xUnit with Moq and FluentAssertions (114 tests, 100% pass rate)
 
 ### Project Structure
 ```
@@ -131,7 +133,13 @@ AIContextPacker/
 │   ├── FilterService          # 3-stage filtering pipeline
 │   ├── PartGeneratorService   # Smart content splitting
 │   ├── ClipboardService       # Clipboard abstraction
-│   └── NotificationService    # User notifications
+│   ├── NotificationService    # User notifications
+│   ├── UpdateService          # Application updates
+│   ├── ProjectService         # Project loading and management
+│   ├── FileSelectionService   # File selection state management
+│   ├── PinService             # Pinned files management
+│   ├── FilterCategoryService  # Filter categories coordination
+│   └── SessionStateService    # Session state orchestration
 ├── Converters/          # WPF value converters
 ├── Helpers/             # Utility classes
 ├── Resources/           # Themes and assets
@@ -148,18 +156,7 @@ AIContextPacker/
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Development Setup
-1. Clone the repository
-2. Open in Visual Studio 2022 or VS Code with C# extension
-3. Build with `dotnet build`
-4. Run with `dotnet run`
-
-### Code Style
-- Follow C# naming conventions
-- Use nullable reference types
-- Keep methods focused and testable
-- Document complex algorithms
-- MVVM pattern throughout
+For detailed development guidelines, architecture decisions, and coding standards, see [Docs/DeveloperGuide.md](Docs/DeveloperGuide.md).
 
 ## 📝 License
 
@@ -225,13 +222,24 @@ For detailed architecture decisions and development notes, see [Docs/Decisions.m
 
 For testing guidelines, see [Docs/TestingGuide.md](Docs/TestingGuide.md).
 
+For development setup and coding standards, see [Docs/DeveloperGuide.md](Docs/DeveloperGuide.md).
+
 ## 🐛 Known Issues
 
 All major bugs have been resolved in version 1.0.1. If you encounter any issues, please [open an issue](../../issues).
 
 ## ⚡ Version History
 
-### Version 1.0.1 (October 26, 2025)
+### Version 1.1.0 (October 26, 2025)
+- Complete refactoring to SOLID principles
+- Service layer architecture with dependency injection
+- Comprehensive test coverage (114 tests, 100% pass rate)
+- MainViewModel reduced by 31.9% (589 → 401 lines)
+- 6 fully-tested services extracted
+- Structured logging with Serilog
+- Improved maintainability and testability
+
+### Version 1.0.1 (October 25, 2025)
 - Initial release
 - Complete UI/UX implementation
 - Full theme system (Light/Dark/System)

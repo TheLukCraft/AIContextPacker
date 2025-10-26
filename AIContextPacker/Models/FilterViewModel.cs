@@ -21,4 +21,9 @@ public partial class FilterViewModel : ObservableObject
         IsActive = isActive;
         IsReadOnly = isReadOnly;
     }
+
+    partial void OnFilterChanged(IgnoreFilter value)
+    {
+        OnPropertyChanged(nameof(Name));
+    }
 }
