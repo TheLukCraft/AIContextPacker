@@ -4,7 +4,7 @@ namespace AIContextPacker.Models;
 
 public class AppSettings
 {
-    public int MaxCharsLimit { get; set; } = 10000;
+    public int MaxCharsLimit { get; set; } = 100000;
     public ThemeMode Theme { get; set; } = ThemeMode.System;
     public bool IncludeFileHeaders { get; set; } = true;
     public List<string> AllowedExtensions { get; set; } = new()
