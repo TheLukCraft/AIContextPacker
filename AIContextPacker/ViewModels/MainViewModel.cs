@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using AIContextPacker.Helpers;
 using AIContextPacker.Models;
 using AIContextPacker.Services;
 using AIContextPacker.Services.Interfaces;
@@ -32,7 +33,7 @@ public partial class MainViewModel : ObservableObject
     private ObservableCollection<GeneratedPart> generatedParts = new();
 
     [ObservableProperty]
-    private ObservableCollection<FilterViewModel> availableFilters = new();
+    private ObservableCollection<FilterCategoryViewModel> filterCategories = new();
 
     [ObservableProperty]
     private ObservableCollection<GlobalPrompt> globalPrompts = new();
@@ -88,20 +89,56 @@ public partial class MainViewModel : ObservableObject
         Settings = await _settingsService.LoadSettingsAsync();
         MaxCharsLimit = Settings.MaxCharsLimit;
 
-        foreach (var filter in Settings.IgnoreFilters)
+        // Load predefined categorized filters
+        var categories = GitIgnoreCategories.GetAllCategories();
+        foreach (var category in categories)
+        {
+            var categoryVm = new FilterCategoryViewModel
+            {
+                CategoryName = category
+            };
+
+            var filters = GitIgnoreCategories.GetFiltersForCategory(category);
+            foreach (var filter in filters)
+            {
+                var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
+                var filterVm = new FilterViewModel(filter, isActive, isReadOnly: true);
+                filterVm.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
+                    {
+                        Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
+                        ApplyFilters();
+                    }
+                };
+                categoryVm.Filters.Add(filterVm);
+            }
+
+            FilterCategories.Add(categoryVm);
+        }
+
+        // Load custom filters
+        var customCategory = new FilterCategoryViewModel
+        {
+            CategoryName = "Custom"
+        };
+
+        foreach (var filter in Settings.CustomIgnoreFilters)
         {
             var isActive = Settings.ActiveFilters.ContainsKey(filter.Name) && Settings.ActiveFilters[filter.Name];
-            var filterVm = new FilterViewModel(filter, isActive);
+            var filterVm = new FilterViewModel(filter, isActive, isReadOnly: false);
             filterVm.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(FilterViewModel.IsActive))
+                if (e.PropertyName == nameof(FilterViewModel.IsActive) && s is FilterViewModel fvm)
                 {
-                    Settings.ActiveFilters[filter.Name] = filterVm.IsActive;
+                    Settings.ActiveFilters[fvm.Filter.Name] = fvm.IsActive;
                     ApplyFilters();
                 }
             };
-            AvailableFilters.Add(filterVm);
+            customCategory.Filters.Add(filterVm);
         }
+
+        FilterCategories.Add(customCategory);
 
         // Add "None" option for global prompts
         GlobalPrompts.Add(new GlobalPrompt
@@ -346,10 +383,13 @@ public partial class MainViewModel : ObservableObject
         if (RootNode == null || string.IsNullOrEmpty(CurrentProjectPath))
             return;
 
-        var activeFilters = AvailableFilters
+        // Aggregate all active filters from all categories
+        var activeFilters = FilterCategories
+            .SelectMany(cat => cat.Filters)
             .Where(f => f.IsActive)
             .Select(f => f.Filter)
             .ToList();
+        
         var gitignorePatterns = UseDetectedGitignore ? _localGitignorePatterns : new List<string>();
 
         System.Diagnostics.Debug.WriteLine($"ApplyFilters: Active filters count: {activeFilters.Count}");

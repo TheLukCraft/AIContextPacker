@@ -393,29 +393,81 @@
                         </GroupBox>
 
                         <!-- Filter Controls -->
-                        <StackPanel DockPanel.Dock="Top"
-                                Margin="0,0,0,10">
-                            <TextBlock Text="Ignore Filters:"
-                                       FontWeight="Bold"
-                                       Margin="0,0,0,5"
-                                       Foreground="{DynamicResource TextBrush}"/>
-                            <ItemsControl ItemsSource="{Binding AvailableFilters}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <CheckBox Content="{Binding Name}"
-                                                  IsChecked="{Binding IsActive}"
-                                                  Margin="0,2"
-                                                  Foreground="{DynamicResource TextBrush}"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                        <Border DockPanel.Dock="Top"
+                                Margin="0,0,0,10"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="10">
+                            <StackPanel>
+                                <!-- Section Title -->
+                                <TextBlock Text="Git Ignore Filters:"
+                                           FontWeight="Bold"
+                                           FontSize="14"
+                                           Margin="0,0,0,10"
+                                           Foreground="{DynamicResource TextBrush}"/>
 
-                            <CheckBox Content="Use detected .gitignore"
-                                      IsChecked="{Binding UseDetectedGitignore}"
-                                      IsEnabled="{Binding HasLocalGitignore}"
-                                      Margin="0,5,0,0"
-                                      Foreground="{DynamicResource TextBrush}"/>
-                        </StackPanel>
+                                <!-- Use Detected .gitignore Checkbox -->
+                                <Border BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="0,0,0,8"
+                                        Margin="0,0,0,8">
+                                    <CheckBox Content="Use detected .gitignore"
+                                              IsChecked="{Binding UseDetectedGitignore}"
+                                              IsEnabled="{Binding HasLocalGitignore}"
+                                              Foreground="{DynamicResource TextBrush}"
+                                              FontWeight="SemiBold"/>
+                                </Border>
+
+                                <!-- Categorized Filters -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              MaxHeight="196">
+                                    <ItemsControl ItemsSource="{Binding FilterCategories}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource BorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Margin="0,0,8,8"
+                                                        Background="{DynamicResource BackgroundBrush}"
+                                                        Padding="8">
+                                                    <StackPanel Width="180">
+                                                        <!-- Category Header -->
+                                                        <TextBlock Text="{Binding CategoryName}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                                   Margin="0,0,0,6"/>
+
+                                                        <!-- Filters List -->
+                                                        <ScrollViewer MaxHeight="200"
+                                                                      VerticalScrollBarVisibility="Auto">
+                                                            <ItemsControl ItemsSource="{Binding Filters}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <CheckBox Content="{Binding Name}"
+                                                                                  IsChecked="{Binding IsActive}"
+                                                                                  Margin="0,2"
+                                                                                  Foreground="{DynamicResource TextBrush}"
+                                                                                  FontSize="11"/>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </ScrollViewer>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
 
                         <!-- Selection Buttons -->
                         <StackPanel DockPanel.Dock="Top"
@@ -430,45 +482,56 @@
                                     Style="{StaticResource SecondaryButton}"/>
                         </StackPanel>
 
-                        <!-- File Tree -->
-                        <TreeView ItemsSource="{Binding RootNode.Children}"
-                                  Background="{DynamicResource BackgroundBrush}"
-                                  Foreground="{DynamicResource TextBrush}"
-                                  BorderThickness="0">
-                            <TreeView.ItemContainerStyle>
-                                <Style TargetType="TreeViewItem">
-                                    <Setter Property="Foreground"
-                                            Value="{DynamicResource TextBrush}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsVisible}"
-                                                Value="False">
-                                            <Setter Property="Visibility"
-                                                    Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TreeView.ItemContainerStyle>
-                            <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding IsSelected}"
-                                                  Margin="0,0,5,0"/>
-                                        <Button Content="📌"
-                                                Command="{Binding DataContext.TogglePinFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Visibility="{Binding IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
-                                                BorderThickness="0"
-                                                Background="Transparent"
-                                                Foreground="{DynamicResource TextBrush}"
-                                                Cursor="Hand"
-                                                Padding="2"
-                                                Margin="0,0,5,0"/>
-                                        <TextBlock Text="{Binding Name}"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </HierarchicalDataTemplate>
-                            </TreeView.ItemTemplate>
-                        </TreeView>
+                        <!-- Project Files Section Header -->
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="📁 Project Files:"
+                                   FontWeight="Bold"
+                                   FontSize="14"
+                                   Margin="0,0,0,8"
+                                   Foreground="{DynamicResource TextBrush}"/>
+
+                        <!-- File Tree with Scroll -->
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto">
+                            <TreeView ItemsSource="{Binding RootNode.Children}"
+                                      Background="{DynamicResource BackgroundBrush}"
+                                      Foreground="{DynamicResource TextBrush}"
+                                      BorderThickness="0">
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="TreeViewItem">
+                                        <Setter Property="Foreground"
+                                                Value="{DynamicResource TextBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsVisible}"
+                                                    Value="False">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsSelected}"
+                                                      Margin="0,0,5,0"/>
+                                            <Button Content="📌"
+                                                    Command="{Binding DataContext.TogglePinFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsDirectory, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Invert}"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource TextBrush}"
+                                                    Cursor="Hand"
+                                                    Padding="2"
+                                                    Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
+                        </ScrollViewer>
                     </DockPanel>
                 </Border>
 

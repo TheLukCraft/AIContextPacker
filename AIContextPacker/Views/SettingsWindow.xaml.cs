@@ -21,7 +21,7 @@ public partial class SettingsWindow : Window
     {
         ExtensionsTextBox.Text = string.Join(", ", _settings.AllowedExtensions);
         PromptsListBox.ItemsSource = _settings.GlobalPrompts;
-        FiltersListBox.ItemsSource = _settings.IgnoreFilters;
+        FiltersListBox.ItemsSource = _settings.CustomIgnoreFilters;
         
         // Load theme setting
         switch (_settings.Theme)
@@ -113,7 +113,7 @@ public partial class SettingsWindow : Window
         var dialog = new FilterEditorWindow();
         if (dialog.ShowDialog() == true)
         {
-            _settings.IgnoreFilters.Add(dialog.Filter);
+            _settings.CustomIgnoreFilters.Add(dialog.Filter);
             FiltersListBox.Items.Refresh();
         }
     }
@@ -143,7 +143,7 @@ public partial class SettingsWindow : Window
             
             if (result == MessageBoxResult.Yes)
             {
-                _settings.IgnoreFilters.Remove(filter);
+                _settings.CustomIgnoreFilters.Remove(filter);
                 FiltersListBox.Items.Refresh();
             }
         }
