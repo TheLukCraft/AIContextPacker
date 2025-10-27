@@ -94,6 +94,15 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string searchResultStatus = string.Empty;
 
+    [ObservableProperty]
+    private bool isPinnedFilesExpanded = true;
+
+    [ObservableProperty]
+    private bool isFiltersExpanded = true;
+
+    [ObservableProperty]
+    private bool isGeneratedPartsExpanded = true;
+
     private List<string> _localGitignorePatterns = new();
 
     public MainViewModel(
