@@ -430,7 +430,7 @@
                             <RowDefinition MinHeight="35" MaxHeight="400">
                                 <RowDefinition.Style>
                                     <Style TargetType="RowDefinition">
-                                        <Setter Property="Height" Value="2*"/>
+                                        <Setter Property="Height" Value="3*"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsFiltersExpanded}" Value="False">
                                                 <Setter Property="Height" Value="Auto"/>
