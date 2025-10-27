@@ -15,7 +15,8 @@
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
         Drop="Window_Drop"
-        DragOver="Window_DragOver">
+        DragOver="Window_DragOver"
+        DragLeave="Window_DragLeave">
 
     <Window.Resources>
         <converters:WasCopiedToColorConverter x:Key="WasCopiedToColorConverter"/>
@@ -394,9 +395,9 @@
             <!-- Main Content -->
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="2*" MinWidth="300"/>
                     <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" MinWidth="250"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Left Panel - File Selection -->
@@ -409,15 +410,15 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <!-- Pinned Files -->
-                            <RowDefinition Height="Auto" MinHeight="50"/>
+                            <RowDefinition Height="1.5*" MinHeight="35" MaxHeight="300"/>
                             <!-- Splitter -->
                             <RowDefinition Height="5"/>
                             <!-- Filters -->
-                            <RowDefinition Height="Auto" MinHeight="100"/>
+                            <RowDefinition Height="2*" MinHeight="35" MaxHeight="400"/>
                             <!-- Splitter -->
                             <RowDefinition Height="5"/>
                             <!-- File Tree -->
-                            <RowDefinition Height="*" MinHeight="150"/>
+                            <RowDefinition Height="3*" MinHeight="200"/>
                         </Grid.RowDefinitions>
 
                         <!-- Pinned Files Section -->
@@ -426,6 +427,17 @@
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Background="{DynamicResource BackgroundBrush}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="MinHeight" Value="120"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPinnedFilesExpanded}" Value="False">
+                                            <Setter Property="MinHeight" Value="35"/>
+                                            <Setter Property="MaxHeight" Value="35"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -458,16 +470,8 @@
                                          BorderThickness="0"
                                          Padding="5"
                                          MinHeight="80"
-                                         MaxHeight="150">
-                                    <ListBox.Style>
-                                        <Style TargetType="ListBox">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsPinnedFilesExpanded}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ListBox.Style>
+                                         MaxHeight="150"
+                                         Visibility="{Binding IsPinnedFilesExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
@@ -499,6 +503,17 @@
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Background="{DynamicResource BackgroundBrush}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="MinHeight" Value="120"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsFiltersExpanded}" Value="False">
+                                            <Setter Property="MinHeight" Value="35"/>
+                                            <Setter Property="MaxHeight" Value="35"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -525,16 +540,8 @@
 
                                 <!-- Content -->
                                 <Border Grid.Row="1"
-                                        Padding="10">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsFiltersExpanded}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
+                                        Padding="10"
+                                        Visibility="{Binding IsFiltersExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel>
 
                                     <!-- Use Detected .gitignore Checkbox -->
@@ -955,11 +962,11 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <!-- Action Buttons -->
-                            <RowDefinition Height="Auto" MinHeight="80"/>
+                            <RowDefinition Height="Auto"/>
                             <!-- Splitter -->
                             <RowDefinition Height="5"/>
                             <!-- Generated Parts -->
-                            <RowDefinition Height="*" MinHeight="150"/>
+                            <RowDefinition Height="*" MinHeight="100"/>
                         </Grid.RowDefinitions>
 
                         <!-- Action Buttons Section -->
@@ -993,37 +1000,23 @@
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Header with Toggle -->
+                                <!-- Header -->
                                 <Border Grid.Row="0"
                                         Background="{DynamicResource SurfaceBrush}"
                                         BorderBrush="{DynamicResource BorderBrush}"
                                         BorderThickness="0,0,0,1"
                                         Padding="8">
-                                    <Grid>
-                                        <TextBlock Text="📄 Generated Parts"
-                                                   FontWeight="Bold"
-                                                   FontSize="13"
-                                                   Foreground="{DynamicResource TextBrush}"
-                                                   VerticalAlignment="Center"/>
-                                        <ToggleButton HorizontalAlignment="Right"
-                                                      IsChecked="{Binding IsGeneratedPartsExpanded}"
-                                                      Style="{StaticResource SectionToggleButton}"/>
-                                    </Grid>
+                                    <TextBlock Text="📄 Generated Parts"
+                                               FontWeight="Bold"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextBrush}"
+                                               VerticalAlignment="Center"/>
                                 </Border>
 
                                 <!-- Content -->
                                 <ScrollViewer Grid.Row="1"
                                               VerticalScrollBarVisibility="Auto"
                                               Padding="5">
-                                    <ScrollViewer.Style>
-                                        <Style TargetType="ScrollViewer">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsGeneratedPartsExpanded}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ScrollViewer.Style>
                                     <ItemsControl ItemsSource="{Binding GeneratedParts}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -1078,5 +1071,54 @@
                     Margin="20,0,20,20"
                     Panel.ZIndex="1000"
                     IsHitTestVisible="False"/>
+
+        <!-- Drag & Drop Overlay -->
+        <Border x:Name="DragDropOverlay"
+                Background="#80000000"
+                BorderBrush="{DynamicResource PrimaryBrush}"
+                BorderThickness="4"
+                CornerRadius="8"
+                Visibility="Collapsed"
+                Panel.ZIndex="2000"
+                IsHitTestVisible="False">
+            <Grid>
+                <Border Background="{DynamicResource PrimaryBrush}"
+                        Width="200"
+                        Height="200"
+                        CornerRadius="100"
+                        Opacity="0.9"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <Grid>
+                        <!-- Plus Icon -->
+                        <Viewbox Width="100" Height="100">
+                            <Canvas Width="24" Height="24">
+                                <!-- Vertical line -->
+                                <Rectangle Fill="White" 
+                                           Width="4" 
+                                           Height="18" 
+                                           Canvas.Left="10" 
+                                           Canvas.Top="3"/>
+                                <!-- Horizontal line -->
+                                <Rectangle Fill="White" 
+                                           Width="18" 
+                                           Height="4" 
+                                           Canvas.Left="3" 
+                                           Canvas.Top="10"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                </Border>
+                
+                <TextBlock Text="Drop folder here to load project"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="0,250,0,0"
+                           TextAlignment="Center"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

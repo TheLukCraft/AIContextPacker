@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private readonly IUpdateService _updateService;
     private bool _isClosing = false;
+    private bool _isDragOverlayVisible = false;
 
     public MainWindow(MainViewModel viewModel, IUpdateService updateService)
     {
@@ -88,6 +89,13 @@ public partial class MainWindow : Window
 
     private void Window_Drop(object sender, DragEventArgs e)
     {
+        // Hide overlay
+        if (_isDragOverlayVisible)
+        {
+            DragDropOverlay.Visibility = Visibility.Collapsed;
+            _isDragOverlayVisible = false;
+        }
+
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             var files = (string[])e.Data.GetData(DataFormats.FileDrop)!;
@@ -110,18 +118,46 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
             {
                 e.Effects = DragDropEffects.Copy;
+                // Show overlay only if not already visible
+                if (!_isDragOverlayVisible)
+                {
+                    DragDropOverlay.Visibility = Visibility.Visible;
+                    _isDragOverlayVisible = true;
+                }
             }
             else
             {
                 e.Effects = DragDropEffects.None;
+                // Hide overlay if not a valid folder
+                if (_isDragOverlayVisible)
+                {
+                    DragDropOverlay.Visibility = Visibility.Collapsed;
+                    _isDragOverlayVisible = false;
+                }
             }
         }
         else
         {
             e.Effects = DragDropEffects.None;
+            // Hide overlay
+            if (_isDragOverlayVisible)
+            {
+                DragDropOverlay.Visibility = Visibility.Collapsed;
+                _isDragOverlayVisible = false;
+            }
         }
 
         e.Handled = true;
+    }
+
+    private void Window_DragLeave(object sender, DragEventArgs e)
+    {
+        // Hide overlay when drag leaves the window
+        if (_isDragOverlayVisible)
+        {
+            DragDropOverlay.Visibility = Visibility.Collapsed;
+            _isDragOverlayVisible = false;
+        }
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
