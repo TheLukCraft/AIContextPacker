@@ -410,13 +410,39 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <!-- Pinned Files -->
-                            <RowDefinition Height="1.5*" MinHeight="35" MaxHeight="300"/>
+                            <RowDefinition MinHeight="35" MaxHeight="300">
+                                <RowDefinition.Style>
+                                    <Style TargetType="RowDefinition">
+                                        <Setter Property="Height" Value="1.5*"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPinnedFilesExpanded}" Value="False">
+                                                <Setter Property="Height" Value="Auto"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RowDefinition.Style>
+                            </RowDefinition>
+                            
                             <!-- Splitter -->
                             <RowDefinition Height="5"/>
+                            
                             <!-- Filters -->
-                            <RowDefinition Height="2*" MinHeight="35" MaxHeight="400"/>
+                            <RowDefinition MinHeight="35" MaxHeight="400">
+                                <RowDefinition.Style>
+                                    <Style TargetType="RowDefinition">
+                                        <Setter Property="Height" Value="2*"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFiltersExpanded}" Value="False">
+                                                <Setter Property="Height" Value="Auto"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RowDefinition.Style>
+                            </RowDefinition>
+                            
                             <!-- Splitter -->
                             <RowDefinition Height="5"/>
+                            
                             <!-- File Tree -->
                             <RowDefinition Height="3*" MinHeight="200"/>
                         </Grid.RowDefinitions>
@@ -427,17 +453,6 @@
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Background="{DynamicResource BackgroundBrush}">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="MinHeight" Value="120"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPinnedFilesExpanded}" Value="False">
-                                            <Setter Property="MinHeight" Value="35"/>
-                                            <Setter Property="MaxHeight" Value="35"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -503,17 +518,6 @@
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Background="{DynamicResource BackgroundBrush}">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="MinHeight" Value="120"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsFiltersExpanded}" Value="False">
-                                            <Setter Property="MinHeight" Value="35"/>
-                                            <Setter Property="MaxHeight" Value="35"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
