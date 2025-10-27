@@ -5,33 +5,42 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AIContextPacker.Models;
 using AIContextPacker.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 namespace AIContextPacker.Services;
 
 public class UpdateService : IUpdateService
 {
+    private readonly ILogger<UpdateService> _logger;
     private const string GitHubOwner = "TheLukCraft";
     private const string GitHubRepo = "AIContextPacker";
     private const string GitHubApiUrl = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
+
+    public UpdateService(ILogger<UpdateService> logger)
+    {
+        _logger = logger;
+    }
 
     public string GetCurrentVersion()
     {
         var assembly = Assembly.GetExecutingAssembly();
         var version = assembly.GetName().Version;
-        
+
         // Return version from assembly, with fallback to read from embedded resource or default
         if (version != null && version.Major > 0)
         {
             return $"{version.Major}.{version.Minor}.{version.Build}";
         }
-        
+
         // Fallback: should never happen as version is set in .csproj
-        return "1.0.0";
+        return "0.0.0";
     }
 
     public async Task<UpdateInfo> CheckForUpdatesAsync()
     {
         var currentVersion = GetCurrentVersion();
+        _logger.LogDebug("Current version identified as: {CurrentVersion}", currentVersion);
         
         try
         {
@@ -58,6 +67,7 @@ public class UpdateService : IUpdateService
 
             if (release == null)
             {
+                _logger.LogWarning("Failed to parse GitHub release or TagName is missing.");
                 return new UpdateInfo
                 {
                     CurrentVersion = currentVersion,
@@ -66,7 +76,11 @@ public class UpdateService : IUpdateService
             }
 
             var latestVersion = release.TagName?.TrimStart('v') ?? "0.0.0";
+            _logger.LogDebug("Latest version tag from GitHub: '{TagName}', Parsed latest version: '{LatestVersion}'", release.TagName, latestVersion);
+
+            _logger.LogInformation("Comparing latest version '{LatestVersion}' with current version '{CurrentVersion}'", latestVersion, currentVersion);
             var isNewer = CompareVersions(latestVersion, currentVersion) > 0;
+            _logger.LogDebug("CompareVersions result: {ComparisonResult}", isNewer ? 1 : 0); // Log 4 (1 means latest>current, -1 means latest<current, 0 means equal)
 
             return new UpdateInfo
             {
@@ -109,10 +123,19 @@ public class UpdateService : IUpdateService
 
     private class GitHubRelease
     {
+        [JsonPropertyName("tag_name")]
         public string? TagName { get; set; }
+
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
+
+        [JsonPropertyName("body")]
         public string? Body { get; set; }
+
+        [JsonPropertyName("html_url")]
         public string? HtmlUrl { get; set; }
+
+        [JsonPropertyName("published_at")]
         public DateTime PublishedAt { get; set; }
     }
 }
