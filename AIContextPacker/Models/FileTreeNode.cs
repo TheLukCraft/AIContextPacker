@@ -27,6 +27,9 @@ public partial class FileTreeNode : ObservableObject
     private bool isVisible = true;
 
     [ObservableProperty]
+    private bool isSearchMatch;
+
+    [ObservableProperty]
     private long fileSize;
 
     public FileTreeNode? Parent { get; set; }

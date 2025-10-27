@@ -401,12 +401,106 @@ AIContextPacker/
 
 **Status:** ✅ Core architecture complete and production-ready  
 **Version:** 1.1.2  
-**Phase:** Bug fixing and UX improvements completed  
-**Next:** Icon creation, potential feature additions based on user feedback
+**Phase:** Feature additions and UX improvements  
+**Next:** Icon creation, additional features based on user feedback
 
 ---
 
 ## Recent Decisions & Changes
+
+### October 27, 2025 - File Content Search Feature
+
+**Problem:**
+Users working with large projects needed a way to quickly locate files containing specific text, code patterns, or variable names without manually browsing through the entire file tree. The existing file browser only allowed navigation by file/folder names.
+
+**Solution:**
+Implemented an integrated file content search feature directly above the TreeView with the following capabilities:
+
+1. **Search-as-you-type with Debouncing:**
+   - Search executes automatically 400ms after user stops typing
+   - Prevents excessive file I/O operations during rapid input
+   - Custom `Debouncer` helper class for async operation scheduling
+
+2. **Search Options:**
+   - **Case Sensitive (Aa)**: Toggle for case-sensitive matching
+   - **Regular Expressions (.*)**: Full regex pattern support
+   - **Whole Word (ab|)**: Match complete words only
+   - All options update results dynamically
+
+3. **Visual Feedback:**
+   - Matching files highlighted with theme-aware colors (yellow for light, dark yellow-green for dark)
+   - Auto-expand parent folders to reveal matched files
+   - Status message: "Found X matching file(s)" or "No matches found"
+   - Search spinner during execution
+
+4. **Performance Optimizations:**
+   - Only searches visible files (respects current filters)
+   - Async file reading with proper `ConfigureAwait(false)`
+   - Cancellation token support for long-running searches
+   - Graceful error handling (skips locked/inaccessible files with logging)
+
+**Architecture & Implementation:**
+
+**New Files Created:**
+- `Services/Interfaces/ISearchService.cs` - Service contract with `SearchOptions`, `SearchResult` records
+- `Services/SearchService.cs` - Full implementation with recursive tree traversal
+- `Helpers/Debouncer.cs` - Reusable debounce utility for delayed async execution
+- `Tests/Services/SearchServiceTests.cs` - Comprehensive test suite (12 tests)
+
+**Modified Files:**
+- `Models/FileTreeNode.cs` - Added `IsSearchMatch` observable property
+- `ViewModels/MainViewModel.cs` - Added search properties, commands (`SearchAsync`, `ClearSearchAsync`), debouncer integration
+- `MainWindow.xaml` - Added search UI (TextBox with placeholder, toggle buttons, status display)
+- `Resources/Themes/DarkTheme.xaml` - Added `SearchHighlightBrush` (#4A4A26)
+- `Resources/Themes/LightTheme.xaml` - Added `SearchHighlightBrush` (#FFFDE7A7)
+- `App.xaml.cs` - Registered `ISearchService` in DI container
+
+**Technical Details:**
+
+1. **SearchService Implementation:**
+   - Recursive async tree traversal respecting node visibility
+   - Three matching modes:
+     - Plain text with `string.Contains()` + `StringComparison`
+     - Whole word with regex boundaries `\b{term}\b`
+     - Full regex with `Regex.IsMatch()`
+   - Invalid regex patterns handled gracefully (logged + returns no matches)
+   - Helper `SearchState` class tracks files searched (avoids ref parameters in async)
+
+2. **UI Integration:**
+   - TextBox uses VisualBrush for "🔍 Search file content..." placeholder
+   - Three ToggleButtons styled consistently with app theme
+   - Clear button (✕) integrated into search bar
+   - TreeView `ItemContainerStyle` enhanced with `IsSearchMatch` DataTrigger
+   - Search cleared automatically on project load or filter changes
+
+3. **Testing Coverage:**
+   - 12 comprehensive unit tests covering:
+     - Plain text matching (case-sensitive/insensitive)
+     - Whole word matching
+     - Regex matching (valid and invalid patterns)
+     - Visibility filtering
+     - Error handling (IOException, UnauthorizedAccessException)
+     - Cancellation support
+     - Clear highlight functionality
+
+**Benefits:**
+- **Faster navigation**: Developers can instantly find files by content
+- **Better UX**: Integrated directly into existing workflow (no separate window/panel)
+- **Flexible search**: Supports simple text, whole words, and advanced regex patterns
+- **Performance**: Only searches filtered/visible files, async with cancellation
+- **Maintainable**: Clean service architecture with full test coverage
+- **Accessible**: Keyboard-friendly, works with both light and dark themes
+
+**Rationale:**
+- Custom debouncer avoids unnecessary NuGet dependencies while providing precise control
+- Integrated search (vs. separate panel) maintains familiar file tree context
+- Service-based architecture follows project standards (SOLID, DI, testability)
+- Theme-aware colors ensure readability in both light and dark modes
+- Search state management in ViewModel follows MVVM pattern consistently
+
+**Testing:**
+- All 126 unit tests pass (114 existing + 12 new SearchService tests)
+- Manual testing required for UI interactions and visual highlighting
 
 ### October 27, 2025 - Update Notification Window UX Improvements
 

@@ -20,6 +20,7 @@
     <Color x:Key="SuccessColor">#81C784</Color>
     <Color x:Key="ErrorColor">#E57373</Color>
     <Color x:Key="WarningColor">#FFD54F</Color>
+    <Color x:Key="SearchHighlightColor">#4A4A26</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
@@ -28,6 +29,7 @@
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}"/>
     <SolidColorBrush x:Key="HoverBackgroundBrush" Color="{StaticResource HoverBackgroundColor}"/>
+    <SolidColorBrush x:Key="SearchHighlightBrush" Color="{StaticResource SearchHighlightColor}"/>
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
     <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource SecondaryTextColor}"/>

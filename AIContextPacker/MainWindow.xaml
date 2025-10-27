@@ -479,6 +479,254 @@
                                    Margin="0,0,0,8"
                                    Foreground="{DynamicResource TextBrush}"/>
 
+                        <!-- Search Bar -->
+                        <Border DockPanel.Dock="Top"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Margin="0,0,0,10"
+                                Padding="2">
+                            <DockPanel>
+                                <!-- Search TextBox -->
+                                <Button DockPanel.Dock="Right"
+                                        Content="✕"
+                                        Command="{Binding ClearSearchCommand}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Cursor="Hand"
+                                        FontSize="14"
+                                        Padding="8,4"
+                                        ToolTip="Clear search"
+                                        Width="30"
+                                        Height="30">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                CornerRadius="3"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <TextBox x:Name="SearchTextBox"
+                                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                         Background="{DynamicResource BackgroundBrush}"
+                                         Foreground="{DynamicResource TextBrush}"
+                                         BorderThickness="0"
+                                         Padding="10,6"
+                                         FontSize="13"
+                                         VerticalAlignment="Stretch"
+                                         VerticalContentAlignment="Center">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="TextBox">
+                                                        <Grid>
+                                                            <Border Background="{TemplateBinding Background}"
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    CornerRadius="3">
+                                                                <ScrollViewer x:Name="PART_ContentHost"
+                                                                            Padding="{TemplateBinding Padding}"
+                                                                            VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <TextBlock Text="🔍 Search file content..."
+                                                                     Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                     FontSize="13"
+                                                                     Padding="10,6"
+                                                                     VerticalAlignment="Center"
+                                                                     IsHitTestVisible="False">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Search Options -->
+                        <StackPanel DockPanel.Dock="Top"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,8">
+                            <!-- Case Sensitive Toggle -->
+                            <ToggleButton IsChecked="{Binding IsCaseSensitive}"
+                                          Content="Aa"
+                                          ToolTip="Case Sensitive"
+                                          Margin="0,0,5,0"
+                                          Padding="8,4"
+                                          FontSize="12"
+                                          FontWeight="SemiBold">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="3"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+
+                            <!-- Regex Toggle -->
+                            <ToggleButton IsChecked="{Binding UseRegex}"
+                                          Content=".*"
+                                          ToolTip="Use Regular Expressions"
+                                          Margin="0,0,5,0"
+                                          Padding="8,4"
+                                          FontSize="12"
+                                          FontWeight="SemiBold">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="3"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+
+                            <!-- Whole Word Toggle -->
+                            <ToggleButton IsChecked="{Binding MatchWholeWord}"
+                                          Content="ab|"
+                                          ToolTip="Match Whole Word"
+                                          Padding="8,4"
+                                          FontSize="12"
+                                          FontWeight="SemiBold">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="3"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource HoverBackgroundBrush}"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                        </StackPanel>
+
+                        <!-- Search Result Status -->
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="{Binding SearchResultStatus}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                   Margin="0,0,0,8"
+                                   TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchResultStatus}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
                         <!-- Selection Buttons -->
                         <StackPanel DockPanel.Dock="Top"
                                     Orientation="Horizontal"
@@ -505,11 +753,18 @@
                                     <Style TargetType="TreeViewItem">
                                         <Setter Property="Foreground"
                                                 Value="{DynamicResource TextBrush}"/>
+                                        <Setter Property="IsExpanded"
+                                                Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsVisible}"
                                                     Value="False">
                                                 <Setter Property="Visibility"
                                                         Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSearchMatch}"
+                                                    Value="True">
+                                                <Setter Property="Background"
+                                                        Value="{DynamicResource SearchHighlightBrush}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

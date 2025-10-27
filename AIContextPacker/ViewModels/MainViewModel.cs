@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AIContextPacker.Exceptions;
@@ -26,6 +27,10 @@ public partial class MainViewModel : ObservableObject
     private readonly IPinService _pinService;
     private readonly IFilterCategoryService _filterCategoryService;
     private readonly ISessionStateService _sessionStateService;
+    private readonly ISearchService _searchService;
+
+    private CancellationTokenSource? _searchCts;
+    private readonly Debouncer _searchDebouncer;
 
     public event Action<string>? ToastRequested;
 
@@ -74,6 +79,21 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private AppSettings settings = new();
 
+    [ObservableProperty]
+    private string searchTerm = string.Empty;
+
+    [ObservableProperty]
+    private bool isCaseSensitive;
+
+    [ObservableProperty]
+    private bool useRegex;
+
+    [ObservableProperty]
+    private bool matchWholeWord;
+
+    [ObservableProperty]
+    private string searchResultStatus = string.Empty;
+
     private List<string> _localGitignorePatterns = new();
 
     public MainViewModel(
@@ -85,7 +105,8 @@ public partial class MainViewModel : ObservableObject
         IFileSelectionService fileSelectionService,
         IPinService pinService,
         IFilterCategoryService filterCategoryService,
-        ISessionStateService sessionStateService)
+        ISessionStateService sessionStateService,
+        ISearchService searchService)
     {
         _fileSystemService = fileSystemService;
         _settingsService = settingsService;
@@ -96,6 +117,8 @@ public partial class MainViewModel : ObservableObject
         _pinService = pinService;
         _filterCategoryService = filterCategoryService;
         _sessionStateService = sessionStateService;
+        _searchService = searchService;
+        _searchDebouncer = new Debouncer(TimeSpan.FromMilliseconds(400));
 
         _ = InitializeAsync();
     }
@@ -221,6 +244,7 @@ public partial class MainViewModel : ObservableObject
         {
             IsLoadingProject = false;
             LoadingStatus = string.Empty;
+            await ClearSearchAsync();
         }
     }
 
@@ -360,6 +384,7 @@ public partial class MainViewModel : ObservableObject
         {
             IsLoadingProject = false;
             LoadingStatus = string.Empty;
+            await ClearSearchAsync();
         }
     }
 
@@ -469,5 +494,122 @@ public partial class MainViewModel : ObservableObject
             UseDetectedGitignore);
         
         await _settingsService.SaveSettingsAsync(Settings);
+    }
+
+    partial void OnSearchTermChanged(string value)
+    {
+        _searchDebouncer.Debounce(async () => await SearchAsync());
+    }
+
+    partial void OnIsCaseSensitiveChanged(bool value)
+    {
+        if (!string.IsNullOrEmpty(SearchTerm))
+        {
+            _searchDebouncer.Debounce(async () => await SearchAsync());
+        }
+    }
+
+    partial void OnUseRegexChanged(bool value)
+    {
+        if (!string.IsNullOrEmpty(SearchTerm))
+        {
+            _searchDebouncer.Debounce(async () => await SearchAsync());
+        }
+    }
+
+    partial void OnMatchWholeWordChanged(bool value)
+    {
+        if (!string.IsNullOrEmpty(SearchTerm))
+        {
+            _searchDebouncer.Debounce(async () => await SearchAsync());
+        }
+    }
+
+    [RelayCommand]
+    private async Task SearchAsync()
+    {
+        if (RootNode == null || string.IsNullOrEmpty(SearchTerm))
+        {
+            await ClearSearchAsync();
+            return;
+        }
+
+        _searchCts?.Cancel();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        SearchResultStatus = "Searching...";
+        IsLoadingProject = true;
+
+        try
+        {
+            // Clear previous highlights
+            _searchService.ClearSearchHighlight(RootNode);
+
+            var options = new SearchOptions
+            {
+                SearchTerm = SearchTerm,
+                IsCaseSensitive = IsCaseSensitive,
+                UseRegex = UseRegex,
+                MatchWholeWord = MatchWholeWord
+            };
+
+            // Run search in background
+            var searchResult = await Task.Run(async () =>
+                await _searchService.SearchInFileContentAsync(RootNode, options, token), token);
+
+            if (token.IsCancellationRequested)
+                return;
+
+            // Update node state on UI thread
+            foreach (var node in searchResult.MatchedNodes)
+            {
+                node.IsSearchMatch = true;
+                ExpandParents(node);
+            }
+
+            SearchResultStatus = searchResult.FilesMatched > 0
+                ? $"Found {searchResult.FilesMatched} matching file{(searchResult.FilesMatched != 1 ? "s" : "")}"
+                : "No matches found";
+        }
+        catch (OperationCanceledException)
+        {
+            SearchResultStatus = "Search cancelled";
+        }
+        catch (Exception ex)
+        {
+            SearchResultStatus = "Search error";
+            _notificationService.ShowError($"Search failed: {ex.Message}");
+        }
+        finally
+        {
+            IsLoadingProject = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ClearSearchAsync()
+    {
+        _searchCts?.Cancel();
+        SearchTerm = string.Empty;
+        SearchResultStatus = string.Empty;
+        
+        if (RootNode != null)
+        {
+            await Task.Run(() => _searchService.ClearSearchHighlight(RootNode));
+        }
+    }
+
+    /// <summary>
+    /// Expands all parent nodes up to the root to make the node visible.
+    /// </summary>
+    private void ExpandParents(FileTreeNode node)
+    {
+        var current = node.Parent;
+        while (current != null)
+        {
+            current.IsExpanded = true;
+            current = current.Parent;
+        }
     }
 }
