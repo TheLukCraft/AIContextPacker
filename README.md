@@ -9,7 +9,10 @@ Instantly prepare your project for **feature generation, refactoring,** or **deb
 
 ---
 
-[![Watch the AI Context Packer Demo](https://img.youtube.com/vi/FS1j3-QtWBs/sddefault.jpg)](https://youtu.be/FS1j3-QtWBs)
+[![▶️ Watch the Demo on YouTube](https://img.youtube.com/vi/FS1j3-QtWBs/sddefault.jpg)](https://youtu.be/FS1j3-QtWBs)
+
+> 🎥 **Click the image above to watch the demo on YouTube**
+
 
 ---
 
