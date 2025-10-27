@@ -75,6 +75,7 @@ public partial class App : Application
         services.AddSingleton<IPinService, PinService>();
         services.AddSingleton<IFilterCategoryService, FilterCategoryService>();
         services.AddSingleton<ISessionStateService, SessionStateService>();
+        services.AddSingleton<ISearchService, SearchService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

@@ -33,17 +33,13 @@
             <TextBlock Text="Prompt Content:" 
                        Margin="0,0,0,5"
                        Foreground="{DynamicResource TextBrush}"/>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                         HorizontalScrollBarVisibility="Auto"
-                         Height="200">
-                <TextBox x:Name="ContentTextBox" 
-                         MinHeight="200"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         VerticalScrollBarVisibility="Disabled"
-                         HorizontalScrollBarVisibility="Disabled"
-                         Padding="8"/>
-            </ScrollViewer>
+            <TextBox x:Name="ContentTextBox" 
+                     Height="200"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     Padding="8"/>
         </StackPanel>
     </DockPanel>
 </Window>
