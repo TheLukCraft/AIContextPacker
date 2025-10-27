@@ -179,34 +179,11 @@ AIContextPacker/
 - Session: `%AppData%\AIContextPacker\session.json`
 - Recent: `%AppData%\AIContextPacker\recent.json`
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-For detailed development guidelines, architecture decisions, and coding standards, see [Docs/DeveloperGuide.md](Docs/DeveloperGuide.md).
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 💖 Support
 
 If this tool saves you time and makes your work easier, consider supporting the project:
 
 **[🍕 Buy Me a Slice of Pizza](https://buymeacoffee.com/thelukcraft)**
-
-Your support helps:
-- Add new features you request
-- Fix bugs and improve performance
-- Create detailed tutorials
-- Maintain compatibility with new technologies
-
-### Other Ways to Support
-- ⭐ Star the project on GitHub
-- 🐛 Report bugs and suggest features
-- 📢 Share with fellow developers
-- 📝 Write a review or testimonial
-
 ## 👨‍💻 About the Developer
 
 **Łukasz Capała** - Full Stack Developer
@@ -219,29 +196,7 @@ I turn complex challenges into intuitive software that drives your business. Spe
 - 📺 YouTube: [@capalapl](https://www.youtube.com/@capalapl)
 - 🎵 TikTok: [@capalapl](https://www.tiktok.com/@capalapl)
 
-## 🗺️ Roadmap
 
-### Completed ✅
-- Core file selection and filtering
-- 3-stage filtering pipeline
-- Part generation algorithm
-- Light/Dark theme system
-- Global prompts management
-- State persistence
-- Recent projects
-- Tutorial and About windows
-- Support integration
-- Toast notifications
-- Drag & drop support
-
-### Planned 🚧
-- Cloud sync for settings
-- Export formats (Markdown, JSON)
-- Plugin architecture
-- Multi-language support
-- File content search
-- Diff view for changes
-- Team collaboration features
 
 ## 📚 Documentation
 
@@ -253,28 +208,6 @@ For development setup and coding standards, see [Docs/DeveloperGuide.md](Docs/De
 
 ## 🐛 Known Issues
 
-All major bugs have been resolved in version 1.1.0. If you encounter any issues, please [open an issue](../../issues).
-
-## ⚡ Version History
-
-### Version 1.1.0 (October 26, 2025)
-- Complete refactoring to SOLID principles
-- Service layer architecture with dependency injection
-- Comprehensive test coverage (114 tests, 100% pass rate)
-- MainViewModel reduced by 31.9% (589 → 401 lines)
-- 6 fully-tested services extracted
-- Structured logging with Serilog
-- Improved maintainability and testability
-
-### Version 1.0.1 (October 25, 2025)
-- Initial release
-- Complete UI/UX implementation
-- Full theme system (Light/Dark/System)
-- 10+ predefined global prompts
-- 8 predefined ignore filter sets
-- State persistence and session restore
-- Tutorial and About windows
-- Support integration
-- All major bugs fixed
+All major bugs have been resolved in version 1.1.3. If you encounter any issues, please [open an issue](../../issues).
 
 ---
