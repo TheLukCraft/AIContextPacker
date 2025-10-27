@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AIContextPacker.Exceptions;
@@ -16,382 +15,268 @@ namespace AIContextPacker.Tests.Services;
 
 public class SearchServiceTests
 {
-    private readonly Mock<IFileSystemService> _mockFileSystem;
     private readonly Mock<ILogger<SearchService>> _mockLogger;
     private readonly SearchService _searchService;
 
     public SearchServiceTests()
     {
-        _mockFileSystem = new Mock<IFileSystemService>();
         _mockLogger = new Mock<ILogger<SearchService>>();
-        _searchService = new SearchService(_mockFileSystem.Object, _mockLogger.Object);
+        _searchService = new SearchService(_mockLogger.Object);
     }
 
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenFileSystemServiceIsNull()
+    private FileTreeNode CreateTestTree()
     {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
-            new SearchService(null!, _mockLogger.Object));
+        var root = new FileTreeNode { Name = "Root", FullPath = "C:\\Root", IsDirectory = true };
+        var folder1 = new FileTreeNode { Name = "Documents", FullPath = "C:\\Root\\Documents", IsDirectory = true, Parent = root };
+        var file1 = new FileTreeNode { Name = "Report.txt", FullPath = "C:\\Root\\Documents\\Report.txt", IsDirectory = false, Parent = folder1 };
+        var file2 = new FileTreeNode { Name = "Summary.doc", FullPath = "C:\\Root\\Documents\\Summary.doc", IsDirectory = false, Parent = folder1 };
+        
+        var folder2 = new FileTreeNode { Name = "Code", FullPath = "C:\\Root\\Code", IsDirectory = true, Parent = root };
+        var file3 = new FileTreeNode { Name = "Program.cs", FullPath = "C:\\Root\\Code\\Program.cs", IsDirectory = false, Parent = folder2 };
+        var file4 = new FileTreeNode { Name = "README.md", FullPath = "C:\\Root\\Code\\README.md", IsDirectory = false, Parent = folder2 };
+
+        folder1.Children.Add(file1);
+        folder1.Children.Add(file2);
+        folder2.Children.Add(file3);
+        folder2.Children.Add(file4);
+        root.Children.Add(folder1);
+        root.Children.Add(folder2);
+
+        return root;
     }
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenLoggerIsNull()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
-            new SearchService(_mockFileSystem.Object, null!));
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldThrowArgumentNullException_WhenRootNodeIsNull()
-    {
-        // Arrange
-        var options = new SearchOptions { SearchTerm = "test" };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _searchService.SearchInFileContentAsync(null!, options, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldThrowArgumentNullException_WhenOptionsIsNull()
+    public async Task SearchAsync_WithMatchingName_ReturnsMatchedNodes()
     {
         // Arrange
-        var rootNode = new FileTreeNode { Name = "root", IsDirectory = true };
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            _searchService.SearchInFileContentAsync(rootNode, null!, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldFindMatchingFiles_WithPlainTextSearch()
-    {
-        // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions 
-        { 
-            SearchTerm = "function",
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "Report",
             IsCaseSensitive = false,
             UseRegex = false,
             MatchWholeWord = false
         };
 
-        SetupFileContent("file1.cs", "public void function() {}");
-        SetupFileContent("file2.cs", "console.log('hello');");
-        SetupFileContent("file3.cs", "var myFunction = () => {};");
-
         // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.FilesSearched.Should().Be(3);
-        result.FilesMatched.Should().Be(2);
-        result.MatchedNodes.Should().HaveCount(2);
-        result.MatchedNodes.Should().Contain(n => n.Name == "file1.cs");
-        result.MatchedNodes.Should().Contain(n => n.Name == "file3.cs");
+        result.FilesMatched.Should().Be(1);
+        result.MatchedNodes.Should().HaveCount(1);
+        result.MatchedNodes[0].Name.Should().Be("Report.txt");
     }
 
     [Fact]
-    public async Task SearchInFileContentAsync_ShouldRespectCaseSensitivity()
+    public async Task SearchAsync_CaseInsensitive_FindsMatches()
     {
         // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions 
-        { 
-            SearchTerm = "Function",
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "program",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = false
+        };
+
+        // Act
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
+
+        // Assert
+        result.FilesMatched.Should().Be(1);
+        result.MatchedNodes[0].Name.Should().Be("Program.cs");
+    }
+
+    [Fact]
+    public async Task SearchAsync_CaseSensitive_DoesNotFindMismatchedCase()
+    {
+        // Arrange
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "program",
             IsCaseSensitive = true,
             UseRegex = false,
             MatchWholeWord = false
         };
 
-        SetupFileContent("file1.cs", "public void function() {}");
-        SetupFileContent("file2.cs", "public void Function() {}");
-        SetupFileContent("file3.cs", "var myfunction = () => {};");
-
         // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
 
         // Assert
-        result.FilesMatched.Should().Be(1);
-        result.MatchedNodes.Should().Contain(n => n.Name == "file2.cs");
+        result.FilesMatched.Should().Be(0);
     }
 
     [Fact]
-    public async Task SearchInFileContentAsync_ShouldMatchWholeWord()
+    public async Task SearchAsync_WithRegex_FindsPattern()
     {
         // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions 
-        { 
-            SearchTerm = "test",
-            IsCaseSensitive = false,
-            UseRegex = false,
-            MatchWholeWord = true
-        };
-
-        SetupFileContent("file1.cs", "test case");
-        SetupFileContent("file2.cs", "testing");
-        SetupFileContent("file3.cs", "my test");
-
-        // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
-
-        // Assert
-        result.FilesMatched.Should().Be(2);
-        result.MatchedNodes.Should().Contain(n => n.Name == "file1.cs");
-        result.MatchedNodes.Should().Contain(n => n.Name == "file3.cs");
-        result.MatchedNodes.Should().NotContain(n => n.Name == "file2.cs");
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldSupportRegex()
-    {
-        // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions 
-        { 
-            SearchTerm = @"function\d+",
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = @"\.cs$",
             IsCaseSensitive = false,
             UseRegex = true,
             MatchWholeWord = false
         };
 
-        SetupFileContent("file1.cs", "function1()");
-        SetupFileContent("file2.cs", "function()");
-        SetupFileContent("file3.cs", "function42()");
-
         // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
 
         // Assert
-        result.FilesMatched.Should().Be(2);
-        result.MatchedNodes.Should().Contain(n => n.Name == "file1.cs");
-        result.MatchedNodes.Should().Contain(n => n.Name == "file3.cs");
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldOnlySearchVisibleNodes()
-    {
-        // Arrange
-        var rootNode = new FileTreeNode 
-        { 
-            Name = "root",
-            IsDirectory = true,
-            IsVisible = true,
-            Children = new System.Collections.ObjectModel.ObservableCollection<FileTreeNode>
-            {
-                new FileTreeNode 
-                { 
-                    Name = "visible.cs",
-                    FullPath = "visible.cs",
-                    IsDirectory = false,
-                    IsVisible = true
-                },
-                new FileTreeNode 
-                { 
-                    Name = "hidden.cs",
-                    FullPath = "hidden.cs",
-                    IsDirectory = false,
-                    IsVisible = false
-                }
-            }
-        };
-
-        var options = new SearchOptions { SearchTerm = "test" };
-
-        SetupFileContent("visible.cs", "test content");
-        SetupFileContent("hidden.cs", "test content");
-
-        // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
-
-        // Assert
-        result.FilesSearched.Should().Be(1);
         result.FilesMatched.Should().Be(1);
-        result.MatchedNodes.Should().Contain(n => n.Name == "visible.cs");
-        result.MatchedNodes.Should().NotContain(n => n.Name == "hidden.cs");
+        result.MatchedNodes[0].Name.Should().Be("Program.cs");
     }
 
     [Fact]
-    public async Task SearchInFileContentAsync_ShouldHandleIOException_AndContinueSearching()
+    public async Task SearchAsync_WholeWord_MatchesExactName()
     {
         // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions { SearchTerm = "test" };
-
-        SetupFileContent("file1.cs", "test");
-        _mockFileSystem.Setup(fs => fs.ReadFileContentAsync("file2.cs"))
-            .ThrowsAsync(new IOException("File locked"));
-        SetupFileContent("file3.cs", "test");
-
-        // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
-
-        // Assert
-        result.FilesSearched.Should().Be(3);
-        result.FilesMatched.Should().Be(2);
-        result.MatchedNodes.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldHandleUnauthorizedAccessException_AndContinueSearching()
-    {
-        // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions { SearchTerm = "test" };
-
-        SetupFileContent("file1.cs", "test");
-        _mockFileSystem.Setup(fs => fs.ReadFileContentAsync("file2.cs"))
-            .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
-        SetupFileContent("file3.cs", "test");
-
-        // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
-
-        // Assert
-        result.FilesSearched.Should().Be(3);
-        result.FilesMatched.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldSupportCancellation()
-    {
-        // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions { SearchTerm = "test" };
-        var cts = new CancellationTokenSource();
-
-        // Setup file system to cancel after first read
-        var callCount = 0;
-        _mockFileSystem.Setup(fs => fs.ReadFileContentAsync(It.IsAny<string>()))
-            .ReturnsAsync(() =>
-            {
-                callCount++;
-                if (callCount > 1)
-                {
-                    cts.Cancel();
-                }
-                return "test content";
-            });
-
-        // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            _searchService.SearchInFileContentAsync(rootNode, options, cts.Token));
-    }
-
-    [Fact]
-    public async Task SearchInFileContentAsync_ShouldHandleInvalidRegex()
-    {
-        // Arrange
-        var rootNode = CreateTestTree();
-        var options = new SearchOptions 
-        { 
-            SearchTerm = "[invalid(regex",
-            UseRegex = true
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "Code",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = true
         };
 
-        SetupFileContent("file1.cs", "some content");
-        SetupFileContent("file2.cs", "other content");
-        SetupFileContent("file3.cs", "more content");
+        // Act
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
+
+        // Assert
+        result.FilesMatched.Should().Be(1);
+        result.MatchedNodes[0].Name.Should().Be("Code");
+    }
+
+    [Fact]
+    public async Task SearchAsync_WholeWord_DoesNotMatchPartial()
+    {
+        // Arrange
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "Doc",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = true
+        };
 
         // Act
-        var result = await _searchService.SearchInFileContentAsync(rootNode, options, CancellationToken.None);
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
 
-        // Assert - Should not match anything due to invalid regex, but shouldn't throw
+        // Assert
         result.FilesMatched.Should().Be(0);
     }
 
     [Fact]
-    public void ClearSearchHighlight_ShouldThrowArgumentNullException_WhenRootNodeIsNull()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            _searchService.ClearSearchHighlight(null!));
-    }
-
-    [Fact]
-    public void ClearSearchHighlight_ShouldClearAllIsSearchMatchFlags()
+    public async Task SearchAsync_SkipsInvisibleNodes()
     {
         // Arrange
-        var rootNode = new FileTreeNode
+        var root = CreateTestTree();
+        root.Children[0].Children[0].IsVisible = false; // Hide Report.txt
+        
+        var options = new SearchOptions
         {
-            Name = "root",
-            IsDirectory = true,
-            IsSearchMatch = true,
-            Children = new System.Collections.ObjectModel.ObservableCollection<FileTreeNode>
-            {
-                new FileTreeNode 
-                { 
-                    Name = "file1.cs",
-                    IsSearchMatch = true
-                },
-                new FileTreeNode 
-                { 
-                    Name = "folder",
-                    IsDirectory = true,
-                    IsSearchMatch = true,
-                    Children = new System.Collections.ObjectModel.ObservableCollection<FileTreeNode>
-                    {
-                        new FileTreeNode { Name = "file2.cs", IsSearchMatch = true }
-                    }
-                }
-            }
+            SearchTerm = "Report",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = false
         };
 
         // Act
-        _searchService.ClearSearchHighlight(rootNode);
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
 
         // Assert
-        rootNode.IsSearchMatch.Should().BeFalse();
-        rootNode.Children[0].IsSearchMatch.Should().BeFalse();
-        rootNode.Children[1].IsSearchMatch.Should().BeFalse();
-        rootNode.Children[1].Children[0].IsSearchMatch.Should().BeFalse();
+        result.FilesMatched.Should().Be(0);
     }
 
-    #region Helper Methods
-
-    private FileTreeNode CreateTestTree()
+    [Fact]
+    public async Task SearchAsync_FindsMultipleMatches()
     {
-        return new FileTreeNode
+        // Arrange
+        var root = CreateTestTree();
+        var options = new SearchOptions
         {
-            Name = "root",
-            IsDirectory = true,
-            IsVisible = true,
-            Children = new System.Collections.ObjectModel.ObservableCollection<FileTreeNode>
-            {
-                new FileTreeNode 
-                { 
-                    Name = "file1.cs",
-                    FullPath = "file1.cs",
-                    IsDirectory = false,
-                    IsVisible = true
-                },
-                new FileTreeNode 
-                { 
-                    Name = "file2.cs",
-                    FullPath = "file2.cs",
-                    IsDirectory = false,
-                    IsVisible = true
-                },
-                new FileTreeNode 
-                { 
-                    Name = "file3.cs",
-                    FullPath = "file3.cs",
-                    IsDirectory = false,
-                    IsVisible = true
-                }
-            }
+            SearchTerm = ".", // Match all files with extensions
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = false
         };
+
+        // Act
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
+
+        // Assert
+        result.FilesMatched.Should().Be(4); // All files have extensions
     }
 
-    private void SetupFileContent(string path, string content)
+    [Fact]
+    public async Task SearchAsync_WithInvalidRegex_ReturnsNoMatches()
     {
-        _mockFileSystem.Setup(fs => fs.ReadFileContentAsync(path))
-            .ReturnsAsync(content);
+        // Arrange
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "[invalid(regex",
+            IsCaseSensitive = false,
+            UseRegex = true,
+            MatchWholeWord = false
+        };
+
+        // Act
+        var result = await _searchService.SearchAsync(root, options, CancellationToken.None);
+
+        // Assert
+        result.FilesMatched.Should().Be(0);
     }
 
-    #endregion
+    [Fact]
+    public async Task SearchAsync_WithCancellation_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var root = CreateTestTree();
+        var options = new SearchOptions
+        {
+            SearchTerm = "test",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = false
+        };
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await _searchService.SearchAsync(root, options, cts.Token));
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithNullRootNode_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var options = new SearchOptions
+        {
+            SearchTerm = "test",
+            IsCaseSensitive = false,
+            UseRegex = false,
+            MatchWholeWord = false
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await _searchService.SearchAsync(null!, options, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithNullOptions_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var root = CreateTestTree();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await _searchService.SearchAsync(root, null!, CancellationToken.None));
+    }
 }

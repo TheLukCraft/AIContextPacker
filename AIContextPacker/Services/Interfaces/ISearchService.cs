@@ -53,12 +53,12 @@ public record SearchResult
 }
 
 /// <summary>
-/// Service responsible for searching file contents in the project tree.
+/// Service responsible for searching file and folder names in the project tree.
 /// </summary>
 public interface ISearchService
 {
     /// <summary>
-    /// Searches for content in visible files within the file tree.
+    /// Searches for files and folders by name within the file tree.
     /// </summary>
     /// <param name="rootNode">The root node of the file tree to search.</param>
     /// <param name="options">Search options including term and matching rules.</param>
@@ -66,14 +66,8 @@ public interface ISearchService
     /// <returns>A task that represents the asynchronous search operation, containing the search results.</returns>
     /// <exception cref="System.ArgumentNullException">Thrown when rootNode or options is null.</exception>
     /// <exception cref="System.OperationCanceledException">Thrown when the operation is cancelled.</exception>
-    Task<SearchResult> SearchInFileContentAsync(
+    Task<SearchResult> SearchAsync(
         FileTreeNode rootNode, 
         SearchOptions options, 
         CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Clears search highlight state from all nodes in the tree.
-    /// </summary>
-    /// <param name="rootNode">The root node of the file tree.</param>
-    void ClearSearchHighlight(FileTreeNode rootNode);
 }

@@ -27,7 +27,7 @@ public partial class FileTreeNode : ObservableObject
     private bool isVisible = true;
 
     [ObservableProperty]
-    private bool isSearchMatch;
+    private bool isSearchVisible = true;
 
     [ObservableProperty]
     private long fileSize;
@@ -41,8 +41,8 @@ public partial class FileTreeNode : ObservableObject
         {
             foreach (var child in Children)
             {
-                // Don't change selection state of pinned or invisible children
-                if (!child.IsPinned && child.IsVisible)
+                // Don't change selection state of pinned, invisible, or search-filtered children
+                if (!child.IsPinned && child.IsVisible && child.IsSearchVisible)
                 {
                     child.IsSelected = value;
                 }

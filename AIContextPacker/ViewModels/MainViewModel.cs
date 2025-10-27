@@ -543,8 +543,8 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            // Clear previous highlights
-            _searchService.ClearSearchHighlight(RootNode);
+            // First, hide all nodes
+            SetAllSearchVisible(RootNode, false);
 
             var options = new SearchOptions
             {
@@ -556,20 +556,21 @@ public partial class MainViewModel : ObservableObject
 
             // Run search in background
             var searchResult = await Task.Run(async () =>
-                await _searchService.SearchInFileContentAsync(RootNode, options, token), token);
+                await _searchService.SearchAsync(RootNode, options, token), token);
 
             if (token.IsCancellationRequested)
                 return;
 
-            // Update node state on UI thread
+            // Make matched nodes and their parents visible
             foreach (var node in searchResult.MatchedNodes)
             {
-                node.IsSearchMatch = true;
+                node.IsSearchVisible = true;
+                SetParentsSearchVisible(node);
                 ExpandParents(node);
             }
 
             SearchResultStatus = searchResult.FilesMatched > 0
-                ? $"Found {searchResult.FilesMatched} matching file{(searchResult.FilesMatched != 1 ? "s" : "")}"
+                ? $"Found {searchResult.FilesMatched} matching item{(searchResult.FilesMatched != 1 ? "s" : "")}"
                 : "No matches found";
         }
         catch (OperationCanceledException)
@@ -596,7 +597,32 @@ public partial class MainViewModel : ObservableObject
         
         if (RootNode != null)
         {
-            await Task.Run(() => _searchService.ClearSearchHighlight(RootNode));
+            await Task.Run(() => SetAllSearchVisible(RootNode, true));
+        }
+    }
+
+    /// <summary>
+    /// Sets IsSearchVisible for all nodes in the tree.
+    /// </summary>
+    private void SetAllSearchVisible(FileTreeNode node, bool isVisible)
+    {
+        node.IsSearchVisible = isVisible;
+        foreach (var child in node.Children)
+        {
+            SetAllSearchVisible(child, isVisible);
+        }
+    }
+
+    /// <summary>
+    /// Makes all parent nodes up to the root visible in search.
+    /// </summary>
+    private void SetParentsSearchVisible(FileTreeNode node)
+    {
+        var current = node.Parent;
+        while (current != null)
+        {
+            current.IsSearchVisible = true;
+            current = current.Parent;
         }
     }
 

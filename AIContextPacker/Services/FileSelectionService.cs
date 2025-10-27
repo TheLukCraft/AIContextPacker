@@ -82,8 +82,8 @@ public class FileSelectionService : IFileSelectionService
 
     private void SelectAllRecursive(FileTreeNode node, bool select)
     {
-        // Skip invisible or pinned nodes
-        if (!node.IsVisible || node.IsPinned)
+        // Skip invisible, search-filtered, or pinned nodes
+        if (!node.IsVisible || !node.IsSearchVisible || node.IsPinned)
         {
             return;
         }
@@ -114,7 +114,9 @@ public class FileSelectionService : IFileSelectionService
             return;
         }
 
-        var visibleChildren = directory.Children.Where(c => c.IsVisible && !c.IsPinned).ToList();
+        var visibleChildren = directory.Children
+            .Where(c => c.IsVisible && c.IsSearchVisible && !c.IsPinned)
+            .ToList();
         if (visibleChildren.Count == 0)
         {
             directory.IsSelected = false;

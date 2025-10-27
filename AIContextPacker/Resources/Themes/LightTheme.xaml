@@ -20,7 +20,6 @@
     <Color x:Key="SuccessColor">#107C10</Color>
     <Color x:Key="ErrorColor">#E81123</Color>
     <Color x:Key="WarningColor">#FFB900</Color>
-    <Color x:Key="SearchHighlightColor">#FFFDE7A7</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
@@ -35,6 +34,5 @@
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
-    <SolidColorBrush x:Key="SearchHighlightBrush" Color="{StaticResource SearchHighlightColor}"/>
 
 </ResourceDictionary>

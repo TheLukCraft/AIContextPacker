@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,34 +16,29 @@ namespace AIContextPacker.Services;
 /// </summary>
 internal class SearchState
 {
-    public int FilesSearched { get; set; }
+    public int NodesSearched { get; set; }
 }
 
 /// <summary>
-/// Provides file content search functionality for the project tree.
+/// Provides file and folder name search functionality for the project tree.
 /// </summary>
 public class SearchService : ISearchService
 {
-    private readonly IFileSystemService _fileSystemService;
     private readonly ILogger<SearchService> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchService"/> class.
     /// </summary>
-    /// <param name="fileSystemService">Service for file system operations.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
-    public SearchService(
-        IFileSystemService fileSystemService,
-        ILogger<SearchService> logger)
+    public SearchService(ILogger<SearchService> logger)
     {
-        _fileSystemService = fileSystemService ?? throw new ArgumentNullException(nameof(fileSystemService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
-    /// Searches for content in visible files within the file tree.
+    /// Searches for files and folders by name within the file tree.
     /// </summary>
-    public async Task<SearchResult> SearchInFileContentAsync(
+    public async Task<SearchResult> SearchAsync(
         FileTreeNode rootNode,
         SearchOptions options,
         CancellationToken cancellationToken)
@@ -55,7 +49,7 @@ public class SearchService : ISearchService
             throw new ArgumentNullException(nameof(options));
 
         _logger.LogInformation(
-            "Starting file content search: Term='{SearchTerm}', CaseSensitive={CaseSensitive}, Regex={UseRegex}, WholeWord={WholeWord}",
+            "Starting name search: Term='{SearchTerm}', CaseSensitive={CaseSensitive}, Regex={UseRegex}, WholeWord={WholeWord}",
             options.SearchTerm, options.IsCaseSensitive, options.UseRegex, options.MatchWholeWord);
 
         var stopwatch = Stopwatch.StartNew();
@@ -64,20 +58,21 @@ public class SearchService : ISearchService
 
         try
         {
-            await SearchRecursiveAsync(rootNode, options, matchedNodes, searchState, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Run(() =>
+                SearchRecursive(rootNode, options, matchedNodes, searchState, cancellationToken),
+                cancellationToken).ConfigureAwait(false);
 
             stopwatch.Stop();
 
             var result = new SearchResult
             {
-                FilesSearched = searchState.FilesSearched,
+                FilesSearched = searchState.NodesSearched,
                 FilesMatched = matchedNodes.Count,
                 MatchedNodes = matchedNodes
             };
 
             _logger.LogInformation(
-                "Search completed in {ElapsedMs}ms: {FilesSearched} files searched, {FilesMatched} matches found",
+                "Search completed in {ElapsedMs}ms: {NodesSearched} nodes searched, {MatchesFound} matches found",
                 stopwatch.ElapsedMilliseconds, result.FilesSearched, result.FilesMatched);
 
             return result;
@@ -86,39 +81,26 @@ public class SearchService : ISearchService
         {
             stopwatch.Stop();
             _logger.LogInformation(
-                "Search cancelled after {ElapsedMs}ms: {FilesSearched} files searched, {FilesMatched} matches found before cancellation",
-                stopwatch.ElapsedMilliseconds, searchState.FilesSearched, matchedNodes.Count);
+                "Search cancelled after {ElapsedMs}ms: {NodesSearched} nodes searched, {MatchesFound} matches found before cancellation",
+                stopwatch.ElapsedMilliseconds, searchState.NodesSearched, matchedNodes.Count);
             throw;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
             _logger.LogError(ex,
-                "Search failed after {ElapsedMs}ms: {FilesSearched} files searched",
-                stopwatch.ElapsedMilliseconds, searchState.FilesSearched);
+                "Search failed after {ElapsedMs}ms: {NodesSearched} nodes searched",
+                stopwatch.ElapsedMilliseconds, searchState.NodesSearched);
             throw new AIContextPackerException(
-                $"File content search failed: {ex.Message}",
+                $"File name search failed: {ex.Message}",
                 innerException: ex);
         }
     }
 
     /// <summary>
-    /// Clears search highlight state from all nodes in the tree.
+    /// Recursively searches through the file tree for matching names.
     /// </summary>
-    public void ClearSearchHighlight(FileTreeNode rootNode)
-    {
-        if (rootNode == null)
-            throw new ArgumentNullException(nameof(rootNode));
-
-        _logger.LogDebug("Clearing search highlights");
-
-        ClearSearchHighlightRecursive(rootNode);
-    }
-
-    /// <summary>
-    /// Recursively searches through the file tree for matching content.
-    /// </summary>
-    private async Task SearchRecursiveAsync(
+    private void SearchRecursive(
         FileTreeNode node,
         SearchOptions options,
         List<FileTreeNode> matchedNodes,
@@ -132,48 +114,29 @@ public class SearchService : ISearchService
         if (!node.IsVisible)
             return;
 
-        // If it's a file, search its content
-        if (!node.IsDirectory)
+        searchState.NodesSearched++;
+
+        // Check if node name matches
+        if (IsNameMatch(node.Name, options))
         {
-            searchState.FilesSearched++;
-
-            try
-            {
-                var content = await _fileSystemService.ReadFileContentAsync(node.FullPath)
-                    .ConfigureAwait(false);
-
-                if (IsMatch(content, options))
-                {
-                    matchedNodes.Add(node);
-                    _logger.LogDebug("Match found in file: {FilePath}", node.FullPath);
-                }
-            }
-            catch (IOException ex)
-            {
-                _logger.LogWarning(ex, "Failed to read file for search: {FilePath}", node.FullPath);
-                // Continue searching other files
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, "Access denied to file: {FilePath}", node.FullPath);
-                // Continue searching other files
-            }
+            matchedNodes.Add(node);
+            _logger.LogDebug("Match found: {NodeName} ({Type})", 
+                node.Name, node.IsDirectory ? "folder" : "file");
         }
 
         // Recursively search children
         foreach (var child in node.Children)
         {
-            await SearchRecursiveAsync(child, options, matchedNodes, searchState, cancellationToken)
-                .ConfigureAwait(false);
+            SearchRecursive(child, options, matchedNodes, searchState, cancellationToken);
         }
     }
 
     /// <summary>
-    /// Determines if content matches the search criteria.
+    /// Determines if a node name matches the search criteria.
     /// </summary>
-    private bool IsMatch(string content, SearchOptions options)
+    private bool IsNameMatch(string nodeName, SearchOptions options)
     {
-        if (string.IsNullOrEmpty(content))
+        if (string.IsNullOrEmpty(nodeName))
             return false;
 
         try
@@ -186,21 +149,19 @@ public class SearchService : ISearchService
                     : RegexOptions.IgnoreCase;
 
                 var pattern = options.MatchWholeWord
-                    ? $@"\b{Regex.Escape(options.SearchTerm)}\b"
+                    ? $@"^{Regex.Escape(options.SearchTerm)}$"
                     : options.SearchTerm;
 
-                return Regex.IsMatch(content, pattern, regexOptions);
+                return Regex.IsMatch(nodeName, pattern, regexOptions);
             }
             else if (options.MatchWholeWord)
             {
-                // Use regex for whole word matching without treating search term as regex
-                var regexOptions = options.IsCaseSensitive
-                    ? RegexOptions.None
-                    : RegexOptions.IgnoreCase;
+                // Exact match for whole word (entire name)
+                var comparison = options.IsCaseSensitive
+                    ? StringComparison.Ordinal
+                    : StringComparison.OrdinalIgnoreCase;
 
-                var pattern = $@"\b{Regex.Escape(options.SearchTerm)}\b";
-
-                return Regex.IsMatch(content, pattern, regexOptions);
+                return nodeName.Equals(options.SearchTerm, comparison);
             }
             else
             {
@@ -209,26 +170,13 @@ public class SearchService : ISearchService
                     ? StringComparison.Ordinal
                     : StringComparison.OrdinalIgnoreCase;
 
-                return content.Contains(options.SearchTerm, comparison);
+                return nodeName.Contains(options.SearchTerm, comparison);
             }
         }
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "Invalid regex pattern: {SearchTerm}", options.SearchTerm);
             return false;
-        }
-    }
-
-    /// <summary>
-    /// Recursively clears search highlight state from all nodes.
-    /// </summary>
-    private void ClearSearchHighlightRecursive(FileTreeNode node)
-    {
-        node.IsSearchMatch = false;
-
-        foreach (var child in node.Children)
-        {
-            ClearSearchHighlightRecursive(child);
         }
     }
 }

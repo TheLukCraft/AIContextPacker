@@ -549,7 +549,7 @@
                                                                             Padding="{TemplateBinding Padding}"
                                                                             VerticalAlignment="Center"/>
                                                             </Border>
-                                                            <TextBlock Text="🔍 Search file content..."
+                                                            <TextBlock Text="🔍 Search file/folder name..."
                                                                      Foreground="{DynamicResource SecondaryTextBrush}"
                                                                      FontSize="13"
                                                                      Padding="10,6"
@@ -761,10 +761,10 @@
                                                 <Setter Property="Visibility"
                                                         Value="Collapsed"/>
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsSearchMatch}"
-                                                    Value="True">
-                                                <Setter Property="Background"
-                                                        Value="{DynamicResource SearchHighlightBrush}"/>
+                                            <DataTrigger Binding="{Binding IsSearchVisible}"
+                                                    Value="False">
+                                                <Setter Property="Visibility"
+                                                        Value="Collapsed"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
