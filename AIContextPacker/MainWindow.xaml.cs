@@ -195,12 +195,15 @@ public partial class MainWindow : Window
                     MessageBoxImage.Information);
             }
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"CheckForUpdatesAsync failed: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            
             if (showNoUpdateMessage)
             {
                 MessageBox.Show(
-                    "Could not check for updates. Please check your internet connection.",
+                    $"Could not check for updates. Please check your internet connection.\n\nError: {ex.Message}",
                     "Update Check Failed",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

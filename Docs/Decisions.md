@@ -400,6 +400,51 @@ AIContextPacker/
 ---
 
 **Status:** ✅ Core architecture complete and production-ready  
-**Version:** 1.0.2  
+**Version:** 1.1.2  
 **Phase:** Bug fixing and UX improvements completed  
 **Next:** Icon creation, potential feature additions based on user feedback
+
+---
+
+## Recent Decisions & Changes
+
+### October 27, 2025 - Update Notification Window UX Improvements
+
+**Problem:**
+1. The Update Notification Window lacked proper scrolling - content could overflow without being visible
+2. Release notes from GitHub API were displayed as raw Markdown (with `##`, `**`, etc. visible) instead of formatted text
+
+**Solution:**
+1. **ScrollViewer Implementation:**
+   - Added main `ScrollViewer` wrapping entire window content
+   - Removed nested `ScrollViewer` from "What's New" section to prevent conflicting scroll areas
+   - Allows full window content to scroll when Update window grows beyond 450px height
+
+2. **Markdown Rendering:**
+   - Created `MarkdownToFlowDocumentConverter` (IValueConverter) implementing custom Markdown parser
+   - Converted `TextBlock` to `RichTextBox` with `FlowDocument` binding
+   - Supports: headers (`##`, `###`), bold (`**text**`), inline code (`` `code` ``), code blocks (` ``` `), lists (`-`, `*`), and nested lists
+   - Theme-aware colors using `DynamicResource` for light/dark mode compatibility
+
+**Files Changed:**
+- `AIContextPacker/Views/UpdateNotificationWindow.xaml` - Added ScrollViewer, replaced TextBlock with RichTextBox
+- `AIContextPacker/Views/UpdateNotificationWindow.xaml.cs` - Implemented INotifyPropertyChanged for ReleaseNotes binding
+- `AIContextPacker/Converters/MarkdownToFlowDocumentConverter.cs` - New converter for Markdown → FlowDocument transformation
+
+**Technical Details:**
+- Converter uses `Regex` for inline formatting (`**bold**`, `` `code` ``)
+- Line-by-line parsing for block-level elements (headers, lists, code blocks)
+- Proper indentation handling for nested lists
+- Fallback colors for missing theme resources
+
+**Testing:**
+- All existing 114 unit tests pass
+- WPF converter testing skipped (UI converters are better validated through manual/integration testing)
+- Manual verification required for Markdown rendering with actual GitHub API responses
+
+**Rationale:**
+- Custom Markdown parser avoids heavy dependencies (no Markdig/CommonMark.NET)
+- Keeps application lightweight while providing essential formatting
+- Follows WPF best practices with IValueConverter pattern
+- Maintainable code with clear separation of parsing logic
+

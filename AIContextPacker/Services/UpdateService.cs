@@ -95,7 +95,9 @@ public class UpdateService : IUpdateService
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to check for updates: {Message}", ex.Message);
             System.Diagnostics.Debug.WriteLine($"Update check failed: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             return new UpdateInfo
             {
                 CurrentVersion = currentVersion,

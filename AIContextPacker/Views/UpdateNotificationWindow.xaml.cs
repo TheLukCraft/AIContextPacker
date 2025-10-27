@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows;
+using AIContextPacker.Converters;
 using AIContextPacker.Models;
 
 namespace AIContextPacker.Views;
@@ -19,14 +20,18 @@ public partial class UpdateNotificationWindow : Window
     {
         VersionText.Text = $"Version {_updateInfo.LatestVersion} is now available (you have {_updateInfo.CurrentVersion})";
         
-        // Format release notes
-        var notes = _updateInfo.ReleaseNotes;
-        if (string.IsNullOrWhiteSpace(notes))
-        {
-            notes = "• New features and improvements\n• Bug fixes and performance enhancements";
-        }
+        // Set release notes using converter
+        var markdown = string.IsNullOrWhiteSpace(_updateInfo.ReleaseNotes)
+            ? "• New features and improvements\n• Bug fixes and performance enhancements"
+            : _updateInfo.ReleaseNotes;
+            
+        var converter = new MarkdownToFlowDocumentConverter();
+        var document = converter.Convert(markdown, typeof(System.Windows.Documents.FlowDocument), null, System.Globalization.CultureInfo.CurrentCulture);
         
-        ReleaseNotesText.Text = notes;
+        if (document is System.Windows.Documents.FlowDocument flowDoc)
+        {
+            ReleaseNotesRichTextBox.Document = flowDoc;
+        }
     }
 
     private void DownloadUpdate_Click(object sender, RoutedEventArgs e)
